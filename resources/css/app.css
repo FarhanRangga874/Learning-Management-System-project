@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- STYLE CKEDITOR (LMS) --- */
+@layer components {
+    .ck-content h1 { @apply text-4xl font-extrabold mb-4 mt-6 leading-tight text-gray-900; }
+    .ck-content h2 { @apply text-3xl font-bold mb-3 mt-5 leading-tight text-gray-800; }
+    .ck-content h3 { @apply text-2xl font-semibold mb-2 mt-4 leading-tight text-gray-800; }
+    .ck-content ul { @apply list-disc list-outside ml-6 mb-4 text-gray-700; }
+    .ck-content ol { @apply list-decimal list-outside ml-6 mb-4 text-gray-700; }
+    .ck-content p { @apply mb-4 leading-relaxed text-gray-700; }
+    .ck-content blockquote { @apply border-l-4 border-indigo-500 pl-4 italic text-gray-600 my-4 bg-gray-50 py-2 rounded-r; }
+    .ck-content a { @apply text-blue-600 underline hover:text-blue-800 transition-colors; }
+    .ck-content table { @apply min-w-full border-collapse border border-gray-300 my-4; }
+    .ck-content th, .ck-content td { @apply border border-gray-300 px-4 py-2; }
+}
+
