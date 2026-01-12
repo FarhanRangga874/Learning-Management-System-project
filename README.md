@@ -25,7 +25,7 @@
 ### 🌟 Fitur Utama
 | Fitur | Deskripsi |
 | :--- | :--- |
-| 🔐 **Auth** | Login Multi-user (Admin, Guru, Siswa). |
+| 🔐 **Auth** | Login Multi-user (Admin dan Pengguna). |
 | 📚 **Kelas** | CRUD Kursus dan Materi Pelajaran. |
 | 📊 **Dashboard** | Statistik ringkas untuk monitoring data. |
 | 👥 **Users** | Manajemen data pengguna yang lengkap. |
