@@ -8,6 +8,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 
 // Rute Publik
 Route::get('/', [FrontController::class, 'index'])->name('front.index');
@@ -61,5 +62,12 @@ Route::post('/dev-mode/toggle', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    // ... route resource lain ...
+    
+    // Ubah dari 'students' menjadi 'users'
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+});
 
 require __DIR__.'/auth.php';

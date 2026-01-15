@@ -8,12 +8,22 @@
                 <p class="text-sm text-gray-500 mt-1">Atur kategori untuk pengelompokan kursus.</p>
             </div>
             
-            {{-- Tombol Tambah (Di Header) --}}
-            <a href="{{ route('admin.categories.create') }}" 
-               class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 border border-transparent rounded-full font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md shadow-indigo-200">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Tambah Kategori
-            </a>
+            {{-- Wrapper Tombol Action --}}
+            <div class="flex items-center gap-3">
+                {{-- 1. Tombol Kembali ke Course Index --}}
+                <a href="{{ route('admin.courses.index') }}" 
+                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-300 rounded-full font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Kembali
+                </a>
+
+                {{-- 2. Tombol Tambah Kategori --}}
+                <a href="{{ route('admin.categories.create') }}" 
+                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 border border-transparent rounded-full font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md shadow-indigo-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Tambah Kategori
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -86,7 +96,7 @@
                                             </button>
                                         </form>
                                     </div>
-                                    {{-- Placeholder saat tidak hover agar layout tidak lompat (Mobile tetap muncul) --}}
+                                    {{-- Placeholder mobile --}}
                                     <div class="flex md:hidden items-center justify-center gap-2">
                                         <a href="{{ route('admin.categories.edit', $category) }}" class="text-yellow-600 font-medium">Edit</a>
                                         <span class="text-gray-300">|</span>

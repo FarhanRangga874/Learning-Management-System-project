@@ -1,7 +1,7 @@
 <nav x-data="{ open: false, scrolled: false }" 
-     @scroll.window="scrolled = (window.pageYOffset > 20)"
-     :class="{ 'bg-white/90 backdrop-blur-md shadow-sm': scrolled, 'bg-white border-b border-gray-100': !scrolled }"
-     class="sticky top-0 z-50 transition-all duration-300 ease-in-out">
+    @scroll.window="scrolled = (window.pageYOffset > 20)"
+    :class="{ 'bg-white/90 backdrop-blur-md shadow-sm': scrolled, 'bg-white border-b border-gray-100': !scrolled }"
+    class="sticky top-0 z-50 transition-all duration-300 ease-in-out">
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">

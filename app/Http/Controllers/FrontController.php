@@ -4,16 +4,43 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Lesson;
+use App\Models\Category; // <--- Tambahkan Import ini
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class FrontController extends Controller
 {
     // 1. HALAMAN DEPAN (KATALOG)
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::with('category')->orderBy('id', 'desc')->get();
-        return view('front.index', compact('courses'));
+        // A. Ambil semua kategori untuk ditampilkan di tombol filter
+        $categories = Category::all();
+
+        // B. Siapkan Query Dasar (belum dieksekusi)
+        // Kita gunakan latest() pengganti orderBy('id', 'desc') agar lebih rapi
+        $coursesQuery = Course::with('category')->latest();
+
+        // C. Logika PENCARIAN (Search Bar)
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $coursesQuery->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                  ->orWhere('description', 'like', "%{$keyword}%");
+            });
+        }
+
+        // D. Logika FILTER KATEGORI (Tombol Kategori)
+        if ($request->filled('category')) {
+            // Filter hanya jika nilai category bukan 'all'
+            if ($request->category !== 'all') {
+                $coursesQuery->where('category_id', $request->category);
+            }
+        }
+
+        // E. Eksekusi Query
+        $courses = $coursesQuery->get();
+
+        return view('front.index', compact('courses', 'categories'));
     }
 
     // 2. HALAMAN DETAIL KURSUS (GRID SYSTEM)

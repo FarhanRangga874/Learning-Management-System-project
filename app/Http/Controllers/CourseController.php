@@ -9,22 +9,34 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB; // PENTING: Tambahkan ini untuk Transaction
 use Illuminate\Routing\Controller;
+use App\Models\User; // Tambahkan ini untuk hitung total user
 
 class CourseController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Perbaikan: Kode sebelumnya ada 2 return, yang bawah tidak tereksekusi.
-        // Kita gabungkan jadi satu query yang lengkap.
-        $courses = Course::with('category')
-            ->withCount('students') // Menghitung jumlah siswa
-            ->orderBy('id', 'desc')
-            ->get();
-            
-        return view('admin.courses.index', compact('courses'));
+        // Mulai query dasar (eager loading relasi)
+        $query = Course::with('category')->withCount('students')->orderBy('id', 'desc');
+
+        // Jika ada parameter 'search' di URL, tambahkan kondisi WHERE
+        if ($request->has('search')) {
+            $keyword = $request->input('search');
+            $query->where('title', 'LIKE', "%{$keyword}%");
+        }
+
+        // Eksekusi query
+        $courses = $query->get(); // Atau ->paginate(10) jika ingin pagination
+
+            // 1. Hitung Total Pengguna (Ganti nama variabel)
+        $totalUsers = User::where('role', '!=', 'admin')->count();
+
+        // 2. Hitung Total Kursus
+        $totalCourses = Course::count();
+
+        return view('admin.courses.index', compact('courses', 'totalUsers', 'totalCourses'));
     }
 
     /**
