@@ -17,20 +17,25 @@
                         videoSource: '{{ old('video_source', 'upload') }}' 
                     }">
 
+                        {{-- Judul Materi --}}
                         <div class="mb-4">
                             <x-input-label for="title" :value="__('Judul Materi')" />
                             <x-text-input id="title" class="block mt-1 w-full" type="text" name="title" :value="old('title')" required />
                             <x-input-error :messages="$errors->get('title')" class="mt-2" />
                         </div>
 
+                        {{-- Tipe Materi (UPDATE: Ada Assignment) --}}
                         <div class="mb-4">
                             <x-input-label for="type" :value="__('Tipe Materi')" />
                             <select x-model="type" name="type" id="type" class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="video">Video (Upload/Youtube)</option>
                                 <option value="text">Teks Bacaan</option>
-                                <option value="pdf">Dokumen PDF</option> </select>
+                                <option value="pdf">Dokumen PDF</option>
+                                <option value="assignment">Tugas / Quiz</option> {{-- Opsi Baru --}}
+                            </select>
                         </div>
 
+                        {{-- Bagian Video --}}
                         <div x-show="type === 'video'" x-transition class="mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
                             <h3 class="font-bold text-indigo-700 mb-3 text-sm uppercase">Pengaturan Video</h3>
                             
@@ -64,6 +69,7 @@
                             </div>
                         </div>
 
+                        {{-- Bagian PDF --}}
                         <div x-show="type === 'pdf'" x-transition class="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg">
                             <h3 class="font-bold text-red-700 mb-3 text-sm uppercase">Upload Dokumen</h3>
                             
@@ -80,9 +86,18 @@
                             </div>
                         </div>
 
-                        <div x-show="type === 'text'" x-transition>
+                        {{-- Bagian Teks & Assignment (UPDATE: Digabung) --}}
+                        <div x-show="type === 'text' || type === 'assignment'" x-transition>
+                            
+                            {{-- Info Box untuk Assignment --}}
+                            <div x-show="type === 'assignment'" class="mb-4 p-3 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-sm">
+                                <strong>Info:</strong> Masukkan instruksi atau deskripsi tugas di bawah ini. Soal pilihan ganda/essay dibuat setelah materi ini disimpan.
+                            </div>
+
                             <div class="mb-4">
-                                <x-input-label for="content" :value="__('Isi Konten Bacaan')" />
+                                {{-- Label berubah otomatis --}}
+                                <x-input-label for="content" x-text="type === 'assignment' ? 'Instruksi Tugas' : 'Isi Konten Bacaan'" />
+                                
                                 <div class="mt-1">
                                     <textarea id="content" name="content" class="block w-full border-gray-300 rounded-md shadow-sm">{{ old('content') }}</textarea>
                                 </div>

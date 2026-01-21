@@ -69,4 +69,9 @@ class User extends Authenticatable
     {
         return $this->courses()->where('course_id', $course->id)->exists();
     }
+
+        public function answers()
+    {
+        return $this->hasMany(UserAnswer::class);
+    }
 }

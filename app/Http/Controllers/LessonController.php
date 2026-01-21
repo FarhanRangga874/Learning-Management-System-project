@@ -33,16 +33,19 @@ class LessonController extends Controller
      */
     public function store(Request $request, Chapter $chapter)
     {
-        // 1. Definisikan aturan dasar
+        // 1. Definisikan aturan dasar (TAMBAHKAN 'assignment' DI SINI)
         $rules = [
             'title' => 'required|string|max:255',
-            'type'  => 'required|in:video,text,pdf',
+            'type'  => 'required|in:video,text,pdf,assignment', // <--- Update di sini
         ];
 
         // 2. Validasi Dinamis sesuai tipe
         if ($request->type == 'text') {
             $rules['content'] = 'required|string';
         } 
+        elseif ($request->type == 'assignment') { // <--- Logika Assignment
+            $rules['content'] = 'required|string'; // Instruksi tugas wajib diisi
+        }
         elseif ($request->type == 'video') {
             $rules['video_source'] = 'required|in:upload,youtube';
             
@@ -67,7 +70,7 @@ class LessonController extends Controller
         ];
 
         // 4. Logika Penyimpanan ke kolom 'file_path'
-        if ($request->type == 'text') {
+        if ($request->type == 'text' || $request->type == 'assignment') { // <--- Gabungkan Text & Assignment
             $data['content'] = $request->content;
             $data['video_source'] = null;
             $data['file_path'] = null;
@@ -77,21 +80,18 @@ class LessonController extends Controller
             $data['video_source'] = $request->video_source;
 
             if ($request->video_source == 'upload' && $request->hasFile('video_file')) {
-                // Simpan Video
                 $path = $request->file('video_file')->store('lessons/videos', 'public');
                 $data['file_path'] = $path;
             } 
             elseif ($request->video_source == 'youtube') {
-                // Simpan URL Youtube
                 $data['file_path'] = $request->video_url;
             }
         }
         elseif ($request->type == 'pdf') {
             $data['content'] = '';
-            $data['video_source'] = 'upload'; // PDF dianggap sebagai file upload
+            $data['video_source'] = 'upload';
             
             if ($request->hasFile('pdf_file')) {
-                // Simpan PDF
                 $path = $request->file('pdf_file')->store('lessons/pdfs', 'public');
                 $data['file_path'] = $path; 
             }
@@ -116,16 +116,19 @@ class LessonController extends Controller
      */
     public function update(Request $request, Chapter $chapter, Lesson $lesson)
     {
-        // 1. Aturan Dasar
+        // 1. Aturan Dasar (TAMBAHKAN 'assignment')
         $rules = [
             'title' => 'required|string|max:255',
-            'type'  => 'required|in:video,text,pdf',
+            'type'  => 'required|in:video,text,pdf,assignment', // <--- Update di sini
         ];
 
         // 2. Validasi Dinamis (Update)
         if ($request->type == 'text') {
             $rules['content'] = 'required|string';
         } 
+        elseif ($request->type == 'assignment') { // <--- Logika Assignment
+            $rules['content'] = 'required|string';
+        }
         elseif ($request->type == 'video') {
             $rules['video_source'] = 'required|in:upload,youtube';
             
@@ -147,17 +150,15 @@ class LessonController extends Controller
             'type' => $request->type,
         ];
 
-        // 3. Logika Hapus File Lama (Cleanup)
-        // Jika file sebelumnya adalah 'upload' (video/pdf) dan ada path-nya
+        // 3. Logika Hapus File Lama
         if ($lesson->video_source == 'upload' && $lesson->file_path) {
-            // Hapus jika: Tipe berubah ATAU ada file baru yang diupload
             if ($request->type != $lesson->type || $request->hasFile('video_file') || $request->hasFile('pdf_file')) {
                 Storage::disk('public')->delete($lesson->file_path);
             }
         }
 
         // 4. Logika Update
-        if ($request->type == 'text') {
+        if ($request->type == 'text' || $request->type == 'assignment') { // <--- Gabungkan Text & Assignment
             $data['content'] = $request->content;
             $data['video_source'] = null;
             $data['file_path'] = null;
@@ -171,7 +172,6 @@ class LessonController extends Controller
                     $path = $request->file('video_file')->store('lessons/videos', 'public');
                     $data['file_path'] = $path;
                 } else {
-                    // Pakai path lama jika tidak ada file baru
                     if ($lesson->type == 'video' && $lesson->video_source == 'upload') {
                         $data['file_path'] = $lesson->file_path;
                     }
@@ -189,7 +189,6 @@ class LessonController extends Controller
                 $path = $request->file('pdf_file')->store('lessons/pdfs', 'public');
                 $data['file_path'] = $path;
             } else {
-                // Pakai path lama jika tidak ada file baru
                 if ($lesson->type == 'pdf') {
                     $data['file_path'] = $lesson->file_path;
                 }
@@ -207,7 +206,6 @@ class LessonController extends Controller
      */
     public function destroy(Chapter $chapter, Lesson $lesson)
     {
-        // Hapus file fisik jika ada (Berlaku untuk Video Upload & PDF)
         if ($lesson->video_source == 'upload' && $lesson->file_path) {
             Storage::disk('public')->delete($lesson->file_path);
         }

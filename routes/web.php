@@ -9,6 +9,8 @@ use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\UserProgressController;
 
 // Rute Publik
 Route::get('/', [FrontController::class, 'index'])->name('front.index');
@@ -20,6 +22,9 @@ Route::middleware(['auth'])->group(function () {
     
     // Perhatikan parameter opsional {lesson?} agar bisa menghandle materi spesifik
     Route::get('/learning/{course:slug}/{lesson?}', [FrontController::class, 'learning'])->name('front.learning');
+
+    Route::get('/course/{course:slug}/lesson/{lesson}/quiz', [FrontController::class, 'startQuiz'])->name('front.quiz');
+    Route::post('/course/{course:slug}/lesson/{lesson}/submit', [FrontController::class, 'submitQuiz'])->name('front.quiz.submit');
 });
 
 Route::get('/dashboard', function () {
@@ -42,6 +47,21 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Contoh URL: /admin/courses/1/chapters/create
     Route::resource('courses.chapters', ChapterController::class);
     Route::resource('chapters.lessons', LessonController::class);
+    Route::get('lessons/{lesson}/questions', [QuestionController::class, 'index'])->name('lessons.questions.index');
+    Route::post('lessons/{lesson}/questions', [QuestionController::class, 'store'])->name('lessons.questions.store');
+    Route::delete('questions/{question}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+
+    // 1. Daftar User per Lesson
+    Route::get('lessons/{lesson}/users', [UserProgressController::class, 'index'])
+        ->name('lessons.users.index');
+
+    // 2. Halaman Koreksi User
+    Route::get('lessons/{lesson}/users/{user}', [UserProgressController::class, 'show'])
+        ->name('lessons.users.show');
+
+    // 3. Simpan Nilai
+    Route::put('answers/{userAnswer}/score', [UserProgressController::class, 'updateScore'])
+        ->name('answers.updateScore');
 });
 
 Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
