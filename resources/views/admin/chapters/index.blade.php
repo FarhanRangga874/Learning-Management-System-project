@@ -16,6 +16,7 @@
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
+            {{-- Statistik & Tombol Tambah --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-indigo-500">
                     <div class="text-gray-500 text-sm font-medium">Total Bab</div>
@@ -33,13 +34,17 @@
                 </div>
             </div>
 
+            {{-- SEARCH BAR (Opsional, jika ingin ditambahkan seperti di course index) --}}
+            {{-- <div class="mb-6"> ... Search Bar Code ... </div> --}}
+
+            {{-- Tabel Data --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-100">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-gray-500">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th scope="col" class="px-6 py-4 font-bold">Judul Bab</th>
-                                <th scope="col" class="px-6 py-4 font-bold text-center">Tipe Fokus</th>
+                                {{-- Kolom Tipe Fokus DIHAPUS --}}
                                 <th scope="col" class="px-6 py-4 font-bold text-center">Jumlah Materi</th>
                                 <th scope="col" class="px-6 py-4 font-bold text-center">Aksi</th>
                             </tr>
@@ -51,11 +56,7 @@
                                     <div class="font-bold text-gray-900 text-base">{{ $chapter->title }}</div>
                                 </td>
 
-                                <td class="px-6 py-4 text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100 capitalize">
-                                        {{ $chapter->type ?? 'General' }}
-                                    </span>
-                                </td>
+                                {{-- Kolom Tipe Fokus DIHAPUS --}}
 
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex flex-col items-center justify-center">
@@ -95,7 +96,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center">
+                                <td colspan="3" class="px-6 py-12 text-center"> {{-- Colspan diubah jadi 3 --}}
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                                         <p class="text-gray-500 text-lg font-medium">Belum ada Bab yang dibuat.</p>

@@ -1,24 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-bold text-2xl text-gray-800 leading-tight">
                 {{ __('Manage Courses') }}
             </h2>
-            
-            <div class="flex items-center gap-3">
-                {{-- Tombol Tambah Kategori --}}
-                <a href="{{ route('admin.categories.create') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                    Tambah Kategori
-                </a>
-
-                {{-- Tombol Buat Kursus Baru --}}
-                <a href="{{ route('admin.courses.create') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    Buat Kursus Baru
-                </a>
+            <div class="text-sm text-gray-500">
+                Selamat datang kembali, {{ Auth::user()->name }}!
             </div>
         </div>
     </x-slot>
@@ -26,162 +13,202 @@
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-    {{-- Statistik --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {{-- Card Total Kursus --}}
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-indigo-500">
-                    <div class="text-gray-500 text-sm font-medium">Total Kursus</div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $courses->count() }}</div>
+            {{-- BAGIAN 1: QUICK ACTIONS (MENU KELOLA) --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                
+                {{-- Card 1: Buat Kursus Baru --}}
+                <a href="{{ route('admin.courses.create') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-100 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        </div>
+                        <h3 class="font-bold text-lg text-gray-900 mb-1">Buat Kursus Baru</h3>
+                        <p class="text-sm text-gray-500">Tambahkan materi kursus.</p>
+                    </div>
+                </a>
+
+                {{-- Card 2: Kelola Kategori --}}
+                <a href="{{ route('admin.categories.create') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-purple-100 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                        </div>
+                        <h3 class="font-bold text-lg text-gray-900 mb-1">Kelola Kategori</h3>
+                        <p class="text-sm text-gray-500">Atur kategori untuk mengelompokkan kursus.</p>
+                    </div>
+                </a>
+
+                {{-- Card 3: Kelola Sertifikat --}}
+                <a href="{{ route('admin.certificates.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-yellow-100 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-yellow-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h3 class="font-bold text-lg text-gray-900 mb-1">Kelola Sertifikat</h3>
+                        <p class="text-sm text-gray-500">Pengartur penerbitan sertifikat kursus.</p>
+                    </div>
+                </a>
+
+            </div>
+
+            {{-- BAGIAN 2: STATISTIK & PENCARIAN --}}
+            <div class="flex flex-col lg:flex-row gap-6 mb-8">
+                
+                {{-- Statistik Kecil --}}
+                <div class="flex-1 grid grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center">
+                        <span class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total Kursus</span>
+                        <span class="text-3xl font-extrabold text-gray-900 mt-1">{{ $courses->count() }}</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center">
+                        <span class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total Pengguna</span>
+                        <span class="text-3xl font-extrabold text-gray-900 mt-1">{{ $courses->sum('students_count') }}</span>
+                    </div>
                 </div>
 
-                {{-- Card Total Pengguna (DENGAN TOMBOL) --}}
-{{-- Card Total Pengguna --}}
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-green-500">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <div class="text-gray-500 text-sm font-medium">Total Pengguna</div>
-                            
-                            {{-- PERBAIKAN: Gunakan $totalUsers --}}
-                            <div class="text-2xl font-bold text-gray-800">{{ $totalUsers ?? 0 }}</div>
-                        </div>
-                        
-                        {{-- Tombol Lihat Detail --}}
-                        <a href="{{ route('admin.users.index') }}" class="group flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition shadow-sm border border-green-100">
-                            <span class="text-xs font-semibold hidden sm:block">Lihat Semua</span>
-                            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                        </a>
+                {{-- Search Bar --}}
+                <div class="flex-[2]">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 h-full flex items-center">
+                        <form method="GET" action="{{ route('admin.courses.index') }}" class="w-full flex flex-col md:flex-row gap-3">
+                            <div class="relative w-full">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <input type="text" name="search" value="{{ request('search') }}" 
+                                    class="block w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" 
+                                    placeholder="Cari judul kursus...">
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-bold rounded-xl transition shadow-lg shadow-gray-200">
+                                    Cari
+                                </button>
+                                @if(request('search'))
+                                    <a href="{{ route('admin.courses.index') }}" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-50 transition">
+                                        Reset
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
 
-            {{-- SEARCH BAR (PROFESIONAL) --}}
-            <div class="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <form method="GET" action="{{ route('admin.courses.index') }}" class="flex flex-col md:flex-row gap-4 items-center">
-                    
-                    {{-- Input Field Wrapper --}}
-                    <div class="relative w-full">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </div>
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                            class="block w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out" 
-                            placeholder="Cari kursus berdasarkan judul...">
-                    </div>
-
-                    {{-- Action Buttons --}}
-                    <div class="flex gap-2 w-full md:w-auto">
-                        <button type="submit" class="w-full md:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-150 focus:ring-4 focus:ring-indigo-300 shadow-sm">
-                            Cari
-                        </button>
-                        
-                        @if(request('search'))
-                            <a href="{{ route('admin.courses.index') }}" class="w-full md:w-auto flex items-center justify-center px-5 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-150 shadow-sm">
-                                Reset
-                            </a>
-                        @endif
-                    </div>
-                </form>
-            </div>
-
-            {{-- Tabel Kursus --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-100">
+            {{-- BAGIAN 3: TABEL KURSUS --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-gray-100">
+                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <h3 class="font-bold text-gray-800 text-lg">Daftar Kursus</h3>
+                    <div class="text-xs text-gray-500">Menampilkan {{ $courses->count() }} data terbaru</div>
+                </div>
+                
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-100">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-100">
                             <tr>
-                                <th scope="col" class="px-6 py-4 font-bold w-20">Thumbnail</th>
-                                <th scope="col" class="px-6 py-4 font-bold">Informasi Kursus</th>
+                                <th scope="col" class="px-6 py-4 font-bold w-24">Cover</th>
+                                <th scope="col" class="px-6 py-4 font-bold">Detail Kursus</th>
                                 <th scope="col" class="px-6 py-4 font-bold">Akses</th>
-                                <th scope="col" class="px-6 py-4 font-bold">Total Siswa</th>
-                                <th scope="col" class="px-6 py-4 font-bold text-center">Actions</th>
+                                <th scope="col" class="px-6 py-4 font-bold text-center">Statistik</th>
+                                <th scope="col" class="px-6 py-4 font-bold text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($courses as $course)
-                            <tr class="bg-white hover:bg-gray-50 transition duration-150">
-                                <td class="px-6 py-4">
-                                    <div class="h-12 w-20 rounded-2xl overflow-hidden bg-gray-200 shadow-sm relative group">
-                                        <img src="{{ Storage::url($course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition transform group-hover:scale-110">
+                            <tr class="bg-white hover:bg-gray-50/80 transition duration-150 group">
+                                
+                                {{-- Thumbnail --}}
+                                <td class="px-6 py-4 align-top">
+                                    <div class="h-16 w-24 rounded-lg overflow-hidden bg-gray-200 shadow-sm border border-gray-200 relative">
+                                        <img src="{{ Storage::url($course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition transform group-hover:scale-105 duration-500">
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-4">
-                                    <div class="font-bold text-gray-900 text-base mb-1">{{ $course->title }}</div>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700">
+                                {{-- Judul & Kategori --}}
+                                <td class="px-6 py-4 align-top">
+                                    <div class="font-bold text-gray-900 text-base mb-1 leading-tight">{{ $course->title }}</div>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
                                         {{ $course->category->name }}
                                     </span>
                                 </td>
 
-                                <td class="px-6 py-4">
+                                {{-- Tipe Akses --}}
+                                <td class="px-6 py-4 align-top">
                                     @if($course->access_type == 'open')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                                            <span class="w-1.5 h-1.5 mr-1.5 bg-green-500 rounded-full"></span>
-                                            Open Access
-                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                                            </div>
+                                            <span class="text-xs font-semibold text-gray-700">Terbuka</span>
+                                        </div>
                                     @else
-                                        <div class="flex flex-col items-start gap-1">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                                                <span class="w-1.5 h-1.5 mr-1.5 bg-gray-500 rounded-full"></span>
-                                                Private
-                                            </span>
-                                            <span class="text-xs text-gray-500 font-mono bg-gray-50 px-1 rounded border border-gray-200">Code: {{ $course->access_code }}</span>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-semibold text-gray-700">Privat</div>
+                                                <div class="text-[10px] text-gray-400 font-mono mt-0.5">Kode: {{ $course->access_code }}</div>
+                                            </div>
                                         </div>
                                     @endif
                                 </td>
 
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center text-gray-900 font-bold">
-                                        <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                                        {{ $course->students_count }}
+                                {{-- Statistik Siswa --}}
+                                <td class="px-6 py-4 align-top text-center">
+                                    <div class="inline-flex flex-col items-center">
+                                        <span class="text-lg font-bold text-gray-900">{{ $course->students_count }}</span>
+                                        <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wide">Siswa</span>
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-4">
+                                {{-- Aksi --}}
+                                <td class="px-6 py-4 align-middle">
                                     <div class="flex justify-center items-center gap-2">
                                         
-                                        <a href="{{ route('admin.courses.chapters.index', $course) }}" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition border border-indigo-200" title="Kelola Materi">
+                                        <a href="{{ route('admin.courses.chapters.index', $course) }}" class="p-2 bg-white border border-gray-200 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition shadow-sm" title="Kelola Materi">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                                         </a>
 
-                                        <a href="{{ route('admin.courses.show', $course) }}" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition border border-green-200" title="Lihat Siswa">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        <a href="{{ route('admin.courses.show', $course) }}" class="p-2 bg-white border border-gray-200 rounded-lg text-green-600 hover:bg-green-50 hover:border-green-200 transition shadow-sm" title="Lihat enroll">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                         </a>
 
-                                        <a href="{{ route('admin.courses.edit', $course) }}" class="p-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition border border-gray-200" title="Edit Kursus">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        <a href="{{ route('admin.courses.edit', $course) }}" class="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition shadow-sm" title="Edit Kursus">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                         </a>
 
                                         <form action="{{ route('admin.courses.destroy', $course) }}" method="POST" class="inline-block">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition border border-red-200" onclick="return confirm('Apakah Anda yakin ingin menghapus kursus ini secara permanen?')" title="Hapus Kursus">
+                                            <button type="submit" class="p-2 bg-white border border-gray-200 rounded-lg text-red-500 hover:bg-red-50 hover:border-red-200 transition shadow-sm" onclick="return confirm('Hapus kursus ini permanen?')" title="Hapus Kursus">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </form>
+
                                     </div>
                                 </td>
                             </tr>
                             @empty
-                            {{-- Empty State dengan Logika Search --}}
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center">
+                                <td colspan="5" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center justify-center">
-                                        <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                        <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                                            <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                        </div>
                                         
                                         @if(request('search'))
-                                            <p class="text-gray-500 text-lg font-medium">Tidak ada kursus ditemukan.</p>
-                                            <p class="text-gray-400 text-sm mb-4">Coba cari dengan kata kunci lain.</p>
-                                            <a href="{{ route('admin.courses.index') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold hover:underline">
-                                                Reset Pencarian
+                                            <h3 class="text-gray-900 text-lg font-bold">Pencarian Tidak Ditemukan</h3>
+                                            <p class="text-gray-500 text-sm mt-2 mb-6 max-w-sm mx-auto">Kami tidak dapat menemukan kursus dengan kata kunci "<span class="font-bold">{{ request('search') }}</span>".</p>
+                                            <a href="{{ route('admin.courses.index') }}" class="inline-flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg font-semibold text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition">
+                                                Reset Filter
                                             </a>
                                         @else
-                                            <p class="text-gray-500 text-lg font-medium">Belum ada kursus yang dibuat.</p>
-                                            <p class="text-gray-400 text-sm mb-4">Mulai dengan membuat kursus pertama Anda.</p>
-                                            <a href="{{ route('admin.courses.create') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold hover:underline">
-                                                + Buat Kursus Sekarang
+                                            <h3 class="text-gray-900 text-lg font-bold">Belum Ada Kursus</h3>
+                                            <p class="text-gray-500 text-sm mt-2 mb-6 max-w-sm mx-auto">Anda belum membuat kursus apapun. Mulailah berbagi pengetahuan sekarang.</p>
+                                            <a href="{{ route('admin.courses.create') }}" class="inline-flex items-center px-6 py-3 bg-indigo-600 border border-transparent rounded-lg font-semibold text-sm text-white hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                                                + Buat Kursus Pertama
                                             </a>
                                         @endif
                                     </div>
@@ -192,6 +219,7 @@
                     </table>
                 </div>
             </div>
+
         </div>
     </div>
 </x-app-layout>

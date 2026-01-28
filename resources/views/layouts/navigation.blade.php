@@ -6,12 +6,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center gap-8">
+                
                 <div class="shrink-0 flex items-center">
-                    <a href="/" class="transition hover:scale-105 duration-200">
-                        <x-application-logo class="block h-9 w-auto fill-current text-indigo-600" />
+                    <a href="/" class="flex items-center transition hover:scale-105 duration-200">
+                        <span class="font-black text-2xl tracking-tighter font-sans">
+                            <span class="text-indigo-600">AL</span><span class="text-gray-900">DI</span>
+                        </span>
                     </a>
                 </div>
-
                 <div class="hidden space-x-6 sm:flex sm:items-center">
                     <x-nav-link :href="route('front.index')" :active="request()->routeIs('front.index')" class="text-sm font-medium hover:text-indigo-600 transition-colors">
                         {{ __('Home') }}
@@ -36,22 +38,6 @@
 
             <div class="hidden sm:flex sm:items-center sm:gap-4">
                 @auth
-                    @if(Auth::user()->role === 'admin')
-                        <form action="{{ route('dev.toggle') }}" method="POST" class="mr-2">
-                            @csrf
-                            <button type="submit" 
-                                class="group relative inline-flex items-center justify-center px-3 py-1 text-xs font-bold rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 {{ session('dev_mode') ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 focus:ring-red-500' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100 focus:ring-gray-400' }}">
-                                <span class="flex items-center gap-1.5">
-                                    <span class="relative flex h-2 w-2">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {{ session('dev_mode') ? 'bg-red-400' : 'hidden' }}"></span>
-                                    <span class="relative inline-flex rounded-full h-2 w-2 {{ session('dev_mode') ? 'bg-red-500' : 'bg-gray-400' }}"></span>
-                                    </span>
-                                    {{ session('dev_mode') ? 'DEV ON' : 'DEV OFF' }}
-                                </span>
-                            </button>
-                        </form>
-                    @endif
-
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
                             <button class="flex items-center gap-2 px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-gray-900 focus:outline-none transition duration-150 ease-in-out">
@@ -76,8 +62,8 @@
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <x-dropdown-link :href="route('logout')"
-                                        onclick="event.preventDefault(); this.closest('form').submit();"
-                                        class="text-red-600 hover:bg-red-50">
+                                            onclick="event.preventDefault(); this.closest('form').submit();"
+                                            class="text-red-600 hover:bg-red-50">
                                     {{ __('Log Out') }}
                                 </x-dropdown-link>
                             </form>
@@ -125,15 +111,6 @@
                         <x-responsive-nav-link :href="route('admin.courses.index')" :active="request()->routeIs('admin.*')" class="text-amber-600">
                             {{ __('Admin Panel') }}
                         </x-responsive-nav-link>
-                        
-                        <div class="px-4 py-2">
-                            <form action="{{ route('dev.toggle') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="w-full flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md border {{ session('dev_mode') ? 'bg-red-50 text-red-700 border-red-200' : 'bg-gray-50 text-gray-600 border-gray-200' }}">
-                                    {{ session('dev_mode') ? '🔴 Matikan Dev Mode' : '⚪ Nyalakan Dev Mode' }}
-                                </button>
-                            </form>
-                        </div>
                     </div>
                 @endif
             @endauth

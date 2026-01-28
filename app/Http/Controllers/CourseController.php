@@ -7,9 +7,9 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB; // PENTING: Tambahkan ini untuk Transaction
+use Illuminate\Support\Facades\DB; 
 use Illuminate\Routing\Controller;
-use App\Models\User; // Tambahkan ini untuk hitung total user
+use App\Models\User; 
 
 class CourseController extends Controller
 {
@@ -18,22 +18,16 @@ class CourseController extends Controller
      */
     public function index(Request $request)
     {
-        // Mulai query dasar (eager loading relasi)
         $query = Course::with('category')->withCount('students')->orderBy('id', 'desc');
 
-        // Jika ada parameter 'search' di URL, tambahkan kondisi WHERE
         if ($request->has('search')) {
             $keyword = $request->input('search');
             $query->where('title', 'LIKE', "%{$keyword}%");
         }
 
-        // Eksekusi query
-        $courses = $query->get(); // Atau ->paginate(10) jika ingin pagination
+        $courses = $query->get(); 
 
-            // 1. Hitung Total Pengguna (Ganti nama variabel)
         $totalUsers = User::where('role', '!=', 'admin')->count();
-
-        // 2. Hitung Total Kursus
         $totalCourses = Course::count();
 
         return view('admin.courses.index', compact('courses', 'totalUsers', 'totalCourses'));
@@ -60,16 +54,26 @@ class CourseController extends Controller
             'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'access_type' => 'required|in:open,code',
             'access_code' => 'nullable|string',
-            // VALIDASI BARU: Keypoints (Array)
+            
+            // --- PERBAIKAN 1: VALIDASI SERTIFIKAT ---
+            'certificate_policy' => 'required|in:manual,auto', 
+            
             'course_keypoints' => 'nullable|array',
             'course_keypoints.*' => 'nullable|string|max:255',
         ]);
 
-        // Gunakan DB Transaction agar data konsisten
-        // (Jika simpan keypoints gagal, course tidak akan tersimpan)
         DB::transaction(function () use ($request) {
             
-            $validated = $request->only(['title', 'category_id', 'description', 'access_type', 'access_code']);
+            // --- PERBAIKAN 2: MASUKKAN KE DATA YANG DISIMPAN ---
+            $validated = $request->only([
+                'title', 
+                'category_id', 
+                'description', 
+                'access_type', 
+                'access_code',
+                'certificate_policy' // <--- PENTING: Agar opsi 'auto' tersimpan
+            ]);
+            
             $validated['slug'] = Str::slug($request->title);
 
             if ($request->hasFile('thumbnail')) {
@@ -77,13 +81,12 @@ class CourseController extends Controller
                 $validated['thumbnail'] = $iconPath;
             }
             
-            // 1. Simpan Course Utama
+            // 1. Simpan Course
             $course = Course::create($validated);
 
-            // 2. Simpan Keypoints (Tujuan Pembelajaran)
+            // 2. Simpan Keypoints
             if ($request->has('course_keypoints')) {
                 foreach ($request->course_keypoints as $keypoint) {
-                    // Hanya simpan jika tidak kosong
                     if (!empty($keypoint)) {
                         $course->keypoints()->create([
                             'name' => $keypoint
@@ -102,11 +105,7 @@ class CourseController extends Controller
      */
     public function show(Course $course)
     {
-        // Load relationship for enrolled students, ordered by enrollment date
-        // Assuming the pivot table is named 'course_student' or 'enrollments' and has timestamps
         $students = $course->students()->orderByPivot('joined_at', 'desc')->paginate(10);
-        
-        // Load keypoints juga jika ingin ditampilkan di admin
         $course->load('keypoints'); 
         
         return view('admin.courses.show', compact('course', 'students'));
@@ -118,7 +117,6 @@ class CourseController extends Controller
     public function edit(Course $course)
     {
         $categories = Category::all();
-        // Load keypoints agar bisa ditampilkan di form edit
         $course->load('keypoints'); 
         
         return view('admin.courses.edit', compact('course', 'categories'));
@@ -136,34 +134,42 @@ class CourseController extends Controller
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'access_type' => 'required|in:open,code',
             'access_code' => 'nullable|string',
-            // VALIDASI BARU
+            
+            // --- PERBAIKAN 1: VALIDASI SERTIFIKAT (UPDATE) ---
+            'certificate_policy' => 'required|in:manual,auto',
+
             'course_keypoints' => 'nullable|array',
             'course_keypoints.*' => 'nullable|string|max:255',
         ]);
 
         DB::transaction(function () use ($request, $course) {
             
-            $validated = $request->only(['title', 'category_id', 'description', 'access_type', 'access_code']);
+            // --- PERBAIKAN 2: UPDATE DATA SERTIFIKAT ---
+            $validated = $request->only([
+                'title', 
+                'category_id', 
+                'description', 
+                'access_type', 
+                'access_code',
+                'certificate_policy' // <--- PENTING: Agar perubahan tersimpan
+            ]);
+            
             $validated['slug'] = Str::slug($request->title);
 
             if ($request->hasFile('thumbnail')) {
-                // Hapus gambar lama
                 if ($course->thumbnail) {
                     Storage::disk('public')->delete($course->thumbnail);
                 }
-                // Simpan baru
                 $iconPath = $request->file('thumbnail')->store('courses', 'public');
                 $validated['thumbnail'] = $iconPath;
             }
 
-            // 1. Update Course Utama
+            // 1. Update Course
             $course->update($validated);
 
             // 2. Update Keypoints
-            // Strategi: Hapus semua keypoints lama, lalu buat ulang sesuai inputan baru.
-            // Ini menangani kasus edit teks, hapus poin, dan tambah poin sekaligus.
             if ($request->has('course_keypoints')) {
-                $course->keypoints()->delete(); // Hapus data lama di database
+                $course->keypoints()->delete(); 
 
                 foreach ($request->course_keypoints as $keypoint) {
                     if (!empty($keypoint)) {
@@ -184,13 +190,9 @@ class CourseController extends Controller
     public function destroy(Course $course)
     {
         DB::transaction(function () use ($course) {
-            // Hapus gambar fisik
             if ($course->thumbnail) {
                 Storage::disk('public')->delete($course->thumbnail);
             }
-            
-            // Keypoints akan otomatis terhapus karena 'onDelete cascade' di migration
-            // Tapi untuk keamanan, kita bisa delete manual course-nya
             $course->delete();
         });
         

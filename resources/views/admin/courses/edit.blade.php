@@ -165,6 +165,14 @@
                         </div>
                     </div>
 
+                    <div class="mb-4">
+                        <x-input-label :value="__('Mode Sertifikat')" />
+                            <div class="flex gap-4 mt-2">
+                                <label><input type="radio" name="certificate_policy" value="manual" checked> Manual (Cek Admin)</label>
+                                <label><input type="radio" name="certificate_policy" value="auto"> Otomatis (Langsung)</label>
+                            </div>
+                    </div>
+
                     <div class="flex items-center justify-end gap-4 pt-4">
                         <a href="{{ route('admin.courses.index') }}" class="px-6 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 font-bold hover:bg-gray-50 transition">
                             Batal

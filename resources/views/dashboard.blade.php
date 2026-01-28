@@ -41,8 +41,8 @@
                     
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs font-semibold text-gray-500 dark:text-gray-400">
-                            <span>Aktivitas Belajar</span>
-                            <span>Active</span>
+                            <span>Status Akun</span>
+                            <span class="text-green-600">Active</span>
                         </div>
                         <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 md:h-2.5">
                             <div class="bg-blue-600 h-2 md:h-2.5 rounded-full" style="width: {{ $myCourses->count() > 0 ? '100%' : '0%' }}"></div>
@@ -72,17 +72,31 @@
                 </div>
             </div>
 
-            {{-- 3. COURSE GRID (2 Kolom di HP) --}}
-            {{-- PERUBAHAN: grid-cols-2 (HP) md:grid-cols-2 lg:grid-cols-3 --}}
+            {{-- 3. COURSE GRID --}}
             <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                 @forelse($myCourses as $course)
+                
+                {{-- LOGIC HITUNG PROGRESS DI DALAM LOOP --}}
+                @php
+                    // 1. Hitung total materi dalam kursus ini
+                    // Pastikan di controller sudah diload 'chapters.lessons' agar tidak N+1 Query
+                    $totalLessons = $course->chapters->flatMap->lessons->count();
+
+                    // 2. Hitung jumlah materi yang sudah diselesaikan user ini di kursus ini
+                    $completedLessons = \App\Models\LessonCompletion::where('user_id', Auth::id())
+                        ->where('course_id', $course->id)
+                        ->count();
+
+                    // 3. Hitung persentase
+                    $progress = ($totalLessons > 0) ? round(($completedLessons / $totalLessons) * 100) : 0;
+                @endphp
+
                 <div class="group bg-white dark:bg-gray-800 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full overflow-hidden">
                     
-                    {{-- Thumbnail (Tinggi disesuaikan untuk HP) --}}
+                    {{-- Thumbnail --}}
                     <div class="relative h-32 md:h-48 overflow-hidden">
                         <img src="{{ Storage::url($course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        {{-- Badge Category (Ukuran font kecil di HP) --}}
                         <span class="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur text-indigo-700 text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 md:py-1.5 rounded-full shadow-sm">
                             {{ $course->category->name }}
                         </span>
@@ -90,31 +104,37 @@
 
                     {{-- Content --}}
                     <div class="p-4 md:p-6 flex-1 flex flex-col">
-                        {{-- Judul (Ukuran font disesuaikan) --}}
                         <h4 class="font-bold text-sm md:text-xl text-gray-900 dark:text-gray-100 mb-2 leading-snug line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {{ $course->title }}
                         </h4>
                         
-                        {{-- Info Tanggal (Hidden di HP agar tidak sempit) --}}
                         <div class="hidden md:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             <span>Bergabung: {{ $course->pivot->joined_at ? \Carbon\Carbon::parse($course->pivot->joined_at)->format('d M Y') : '-' }}</span>
                         </div>
 
                         <div class="mt-auto pt-4 md:pt-6 border-t border-gray-100 dark:border-gray-700">
-                            {{-- Progress Bar --}}
+                            
+                            {{-- Progress Bar Dinamis --}}
                             <div class="flex justify-between text-[10px] md:text-xs font-semibold mb-2 text-gray-600 dark:text-gray-400">
                                 <span>Progres</span>
-                                <span>0%</span> 
+                                <span class="{{ $progress == 100 ? 'text-green-600' : 'text-indigo-600' }}">
+                                    {{ $progress }}%
+                                </span> 
                             </div>
                             <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 md:h-2 mb-4 md:mb-6">
-                                <div class="bg-indigo-500 h-1.5 md:h-2 rounded-full" style="width: 2%"></div>
+                                <div class="h-1.5 md:h-2 rounded-full transition-all duration-1000 ease-out {{ $progress == 100 ? 'bg-green-500' : 'bg-indigo-500' }}" 
+                                     style="width: {{ $progress }}%"></div>
                             </div>
                             
-                            {{-- Action Button (Icon Only di HP, Full Text di Desktop) --}}
-                            <a href="{{ route('front.learning', $course->slug) }}" class="flex items-center justify-center gap-2 w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-indigo-200 dark:shadow-none text-xs md:text-sm">
-                                <span class="hidden md:inline">Lanjutkan Belajar</span>
-                                <span class="md:hidden">Lanjut</span>
+                            {{-- Tombol Aksi --}}
+                            <a href="{{ route('front.learning', $course->slug) }}" class="flex items-center justify-center gap-2 w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-indigo-200 dark:shadow-none text-xs md:text-sm hover:bg-indigo-700 hover:text-white">
+                                <span class="hidden md:inline">
+                                    {{ $progress == 100 ? 'Lihat Kembali' : ($progress > 0 ? 'Lanjutkan Belajar' : 'Mulai Belajar') }}
+                                </span>
+                                <span class="md:hidden">
+                                    {{ $progress == 100 ? 'Review' : 'Lanjut' }}
+                                </span>
                                 <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </a>
                         </div>

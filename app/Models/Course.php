@@ -20,6 +20,7 @@ class Course extends Model
         'access_type',
         'access_code',
         'status', // Opsional, jika nanti dipakai
+        'certificate_policy',
     ];
 
     // 2. Definisi Relasi: Kursus milik satu Kategori

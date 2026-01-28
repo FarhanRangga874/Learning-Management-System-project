@@ -7,6 +7,7 @@ use App\Models\Lesson;
 use App\Models\Category;
 use App\Models\Question;
 use App\Models\UserAnswer;
+use App\Models\LessonCompletion; // <--- PENTING: Import Model Ini
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -71,7 +72,7 @@ class FrontController extends Controller
             ->with('success', 'Berhasil bergabung!');
     }
 
-    // 4. HALAMAN BELAJAR (CLASSROOM) - UPDATE: DENGAN LOGIC QUIZ
+    // 4. HALAMAN BELAJAR (CLASSROOM) - UPDATE: PROGRESS & QUIZ
     public function learning(Course $course, $lessonId = null)
     {
         $userId = Auth::id();
@@ -92,7 +93,28 @@ class FrontController extends Controller
             }
         }
 
-        // --- TAMBAHAN LOGIKA QUIZ / ASSIGNMENT ---
+        // --- A. LOGIC PROGRESS BAR (BARU) ---
+        // 1. Ambil semua ID lesson di course ini
+        $allLessonIds = Lesson::whereHas('chapter', fn($q) => $q->where('course_id', $course->id))
+            ->pluck('id');
+        
+        $totalLessons = $allLessonIds->count();
+
+        // 2. Hitung berapa yang sudah selesai oleh user ini
+        $completedCount = LessonCompletion::where('user_id', $userId)
+            ->whereIn('lesson_id', $allLessonIds)
+            ->count();
+
+        // 3. Hitung Persentase (0 - 100)
+        $progress = ($totalLessons > 0) ? round(($completedCount / $totalLessons) * 100) : 0;
+
+        // 4. Cek status lesson saat ini (untuk tombol "Sudah Selesai")
+        $isCompleted = LessonCompletion::where('user_id', $userId)
+            ->where('lesson_id', $currentLesson->id)
+            ->exists();
+
+
+        // --- B. LOGIC QUIZ / ASSIGNMENT ---
         $hasSubmitted = false;
         $totalScore = 0;
 
@@ -110,13 +132,54 @@ class FrontController extends Controller
             }
         }
 
-        return view('front.learning', compact('course', 'currentLesson', 'hasSubmitted', 'totalScore'));
+        return view('front.learning', compact(
+            'course', 
+            'currentLesson', 
+            'hasSubmitted', 
+            'totalScore', 
+            'progress',    // <--- Dikirim ke View
+            'isCompleted'  // <--- Dikirim ke View
+        ));
     }
 
-    // 5. MULAI QUIZ (Baru)
+    // 5. MARK AS COMPLETE (BARU: TOMBOL SELESAI & LANJUT)
+    public function markAsComplete(Request $request, Course $course, Lesson $lesson)
+    {
+        $userId = Auth::id();
+
+        // 1. Simpan ke database completion
+        LessonCompletion::firstOrCreate([
+            'user_id' => $userId,
+            'lesson_id' => $lesson->id,
+        ], [
+            'course_id' => $course->id // Sesuai migration Anda
+        ]);
+
+        // 2. Logic Redirect ke Materi Selanjutnya (Auto Next)
+        // Ambil semua lesson urut berdasarkan ID (atau sort_order jika ada)
+        $allLessons = Lesson::whereHas('chapter', fn($q) => $q->where('course_id', $course->id))
+            ->orderBy('id', 'asc') 
+            ->get();
+
+        // Cari index lesson saat ini
+        $currentIndex = $allLessons->search(function($item) use ($lesson) {
+            return $item->id == $lesson->id;
+        });
+
+        // Jika ada materi selanjutnya, redirect ke sana
+        if ($currentIndex !== false && isset($allLessons[$currentIndex + 1])) {
+            $nextLesson = $allLessons[$currentIndex + 1];
+            return redirect()->route('front.learning', [$course->slug, $nextLesson->id]);
+        }
+
+        // Jika ini materi terakhir
+        return redirect()->route('front.learning', [$course->slug, $lesson->id])
+            ->with('success', 'Selamat! Anda telah menyelesaikan materi terakhir.');
+    }
+
+    // 6. MULAI QUIZ
     public function startQuiz(Course $course, Lesson $lesson)
     {
-        // Cek apakah user sudah pernah submit
         $exists = UserAnswer::where('user_id', Auth::id())
             ->whereHas('question', function($q) use ($lesson){
                 $q->where('lesson_id', $lesson->id);
@@ -130,7 +193,7 @@ class FrontController extends Controller
         return view('front.quiz', compact('course', 'lesson', 'questions'));
     }
 
-    // 6. SUBMIT JAWABAN (Baru)
+    // 7. SUBMIT JAWABAN (UPDATE: AUTO COMPLETE)
     public function submitQuiz(Request $request, Course $course, Lesson $lesson)
     {
         $userId = Auth::id();
@@ -161,7 +224,15 @@ class FrontController extends Controller
             ]);
         }
 
+        // --- TAMBAHAN BARU: Tandai Lesson ini sebagai Selesai secara otomatis ---
+        LessonCompletion::firstOrCreate([
+            'user_id' => $userId,
+            'lesson_id' => $lesson->id,
+        ], [
+            'course_id' => $course->id
+        ]);
+
         return redirect()->route('front.learning', [$course->slug, $lesson->id])
-            ->with('success', 'Jawaban berhasil dikirim!');
+            ->with('success', 'Jawaban berhasil dikirim dan ditandai selesai!');
     }
 }
