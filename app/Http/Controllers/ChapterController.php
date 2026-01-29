@@ -6,6 +6,7 @@ use App\Models\Chapter;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB; // PENTING: Untuk Transaction
 
 class ChapterController extends Controller
 {
@@ -14,8 +15,9 @@ class ChapterController extends Controller
      */
     public function index(Course $course)
     {
-        // Menampilkan daftar bab urut berdasarkan ID
-        $chapters = $course->chapters()->orderBy('id', 'asc')->get();
+        // Eager load lessons agar tidak n+1 query di view index (accordion)
+        $chapters = $course->chapters()->with('lessons')->orderBy('id', 'asc')->get();
+        
         return view('admin.chapters.index', compact('course', 'chapters'));
     }
 
@@ -28,19 +30,39 @@ class ChapterController extends Controller
     }
 
     /**
-     * Simpan Bab (Hanya Judul)
+     * Simpan Bab & Materi Sekaligus
      */
     public function store(Request $request, Course $course)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'lessons' => 'nullable|array',
+            'lessons.*' => 'nullable|string|max:255',
         ]);
 
-        // Simpan Bab baru
-        $course->chapters()->create($validated);
+        DB::transaction(function () use ($validated, $course) {
+            // 1. Simpan Bab
+            $chapter = $course->chapters()->create([
+                'title' => $validated['title']
+            ]);
 
-        return redirect()->route('admin.courses.chapters.index', $course->id)
-            ->with('success', 'Bab berhasil ditambahkan!');
+            // 2. Simpan Materi (Jika ada)
+            if (!empty($validated['lessons'])) {
+                foreach ($validated['lessons'] as $lessonTitle) {
+                    if ($lessonTitle) {
+                        $chapter->lessons()->create([
+                            'title' => $lessonTitle,
+                            'type' => 'video', // Default type, bisa diubah nanti di edit
+                            'video_source' => 'youtube', // Default
+                            'is_preview' => false,
+                        ]);
+                    }
+                }
+            }
+        });
+
+        return redirect()->route('admin.courses.chapters.index', $course)
+            ->with('success', 'Bab dan materi berhasil ditambahkan!');
     }
 
     /**
@@ -60,7 +82,6 @@ class ChapterController extends Controller
             'title' => 'required|string|max:255',
         ]);
 
-        // Update Judul Bab
         $chapter->update($validated);
 
         return redirect()->route('admin.courses.chapters.index', $course->id)
@@ -72,7 +93,9 @@ class ChapterController extends Controller
      */
     public function destroy(Course $course, Chapter $chapter)
     {
-        // Hapus Bab (Lessons di dalamnya akan ikut terhapus jika di migration ada onDelete cascade)
+        // Hapus Bab
+        // Note: Lessons di dalamnya otomatis terhapus jika di migration menggunakan onDelete('cascade')
+        // Jika tidak, Anda bisa menambahkan $chapter->lessons()->delete(); di sini.
         $chapter->delete();
 
         return redirect()->route('admin.courses.chapters.index', $course->id)

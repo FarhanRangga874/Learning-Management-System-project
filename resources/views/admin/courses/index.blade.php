@@ -13,8 +13,8 @@
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            {{-- BAGIAN 1: QUICK ACTIONS (MENU KELOLA) --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {{-- BAGIAN 1: QUICK ACTIONS (MENU UTAMA) --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 
                 {{-- Card 1: Buat Kursus Baru --}}
                 <a href="{{ route('admin.courses.create') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-100 transition-all duration-300 relative overflow-hidden">
@@ -29,7 +29,7 @@
                 </a>
 
                 {{-- Card 2: Kelola Kategori --}}
-                <a href="{{ route('admin.categories.create') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-purple-100 transition-all duration-300 relative overflow-hidden">
+                <a href="{{ route('admin.categories.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-purple-100 transition-all duration-300 relative overflow-hidden">
                     <div class="absolute right-0 top-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div class="relative z-10">
                         <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
@@ -48,11 +48,56 @@
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <h3 class="font-bold text-lg text-gray-900 mb-1">Kelola Sertifikat</h3>
-                        <p class="text-sm text-gray-500">Pengartur penerbitan sertifikat kursus.</p>
+                        <p class="text-sm text-gray-500">Pengaturan penerbitan sertifikat kursus.</p>
                     </div>
                 </a>
 
             </div>
+
+            {{-- 
+                BAGIAN 1.5: UTILITIES (FAQ & USER MANAGEMENT)
+                Desain: Slim Container (Grid 2 Kolom)
+            --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                
+                {{-- 1. UTILITY: KELOLA FAQ --}}
+                <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 group hover:border-pink-200 transition-all">
+                    <div class="flex items-center gap-4 w-full sm:w-auto">
+                        <div class="w-10 h-10 rounded-lg bg-pink-50 text-pink-500 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-100 transition-colors">
+                            {{-- Icon Question Mark --}}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">Pusat Bantuan (FAQ)</h4>
+                            <p class="text-xs text-gray-500">Atur pertanyaan umum di halaman depan.</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.faqs.index') }}" class="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-all text-center">
+                        Kelola FAQ
+                    </a>
+                </div>
+
+                {{-- 2. UTILITY: KELOLA PENGGUNA --}}
+                <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 group hover:border-sky-200 transition-all">
+                    <div class="flex items-center gap-4 w-full sm:w-auto">
+                        <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-500 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-100 transition-colors">
+                            {{-- Icon Users Group --}}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">Kelola Pengguna</h4>
+                            <p class="text-xs text-gray-500">Melihat detail pengguna</p>
+                        </div>
+                    </div>
+                    
+                    {{-- TOMBOL DIPERBARUI: Link ke admin.users.index --}}
+                    <a href="{{ route('admin.users.index') }}" class="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:bg-sky-50 hover:text-sky-600 hover:border-sky-200 transition-all text-center">
+                        Lihat User
+                    </a>
+                </div>
+
+            </div>
+
 
             {{-- BAGIAN 2: STATISTIK & PENCARIAN --}}
             <div class="flex flex-col lg:flex-row gap-6 mb-8">
@@ -65,7 +110,7 @@
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center">
                         <span class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total Pengguna</span>
-                        <span class="text-3xl font-extrabold text-gray-900 mt-1">{{ $courses->sum('students_count') }}</span>
+                        <span class="text-3xl font-extrabold text-gray-900 mt-1">{{ $totalUsers ?? 0 }}</span>
                     </div>
                 </div>
 
@@ -171,8 +216,8 @@
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                                         </a>
 
-                                        <a href="{{ route('admin.courses.show', $course) }}" class="p-2 bg-white border border-gray-200 rounded-lg text-green-600 hover:bg-green-50 hover:border-green-200 transition shadow-sm" title="Lihat enroll">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                        <a href="{{ route('admin.courses.show', $course) }}" class="p-2 bg-white border border-gray-200 rounded-lg text-green-600 hover:bg-green-50 hover:border-green-200 transition shadow-sm" title="Lihat Siswa">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                         </a>
 
                                         <a href="{{ route('admin.courses.edit', $course) }}" class="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition shadow-sm" title="Edit Kursus">
@@ -186,7 +231,6 @@
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </form>
-
                                     </div>
                                 </td>
                             </tr>

@@ -45,4 +45,8 @@ class Course extends Model
     {
         return $this->hasMany(CourseKeypoint::class);
     }
+
+    protected $casts = [
+    'course_keypoints' => 'array', // <--- Wajib ada
+    ];
 }

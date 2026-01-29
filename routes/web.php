@@ -13,6 +13,7 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\UserProgressController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\AdminCertificateController;
+use App\Http\Controllers\AdminFaqController;
 
 // Rute Publik
 Route::get('/', [FrontController::class, 'index'])->name('front.index');
@@ -39,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+//admin routes
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('courses', CourseController::class);
@@ -52,22 +54,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('answers/{userAnswer}/score', [UserProgressController::class, 'updateScore'])->name('answers.updateScore');
     Route::get('/certificates', [AdminCertificateController::class, 'index'])->name('certificates.index');
     Route::put('/certificates/{certificate}', [AdminCertificateController::class, 'update'])->name('certificates.update');
+    Route::resource('faqs', AdminFaqController::class);
 });
 
 Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
 Route::get('/courses/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
 
-// Route untuk Switch Developer Mode
-Route::post('/dev-mode/toggle', function () {
-    if (session()->has('dev_mode')) {
-        session()->forget('dev_mode');
-        $msg = 'Developer Mode Non-aktif.';
-    } else {
-        session(['dev_mode' => true]);
-        $msg = 'Developer Mode Aktif! Anda sekarang bisa melihat tombol edit.';
-    }
-    return back()->with('success', $msg);
-})->name('dev.toggle');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])

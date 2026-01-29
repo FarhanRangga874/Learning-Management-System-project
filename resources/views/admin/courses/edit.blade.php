@@ -1,219 +1,315 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center gap-4">
-            <a href="{{ route('admin.courses.index') }}" class="p-2 rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            </a>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Edit Kursus') }}
-            </h2>
-        </div>
-    </x-slot>
 
-    <div class="py-12 bg-gray-50 min-h-screen">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <form method="POST" action="{{ route('admin.courses.update', $course) }}" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
+    <div class="pb-10 bg-slate-50 min-h-screen">
+        
+        <form method="POST" action="{{ route('admin.courses.update', $course->id) }}" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
 
-                <div class="space-y-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                
+                {{-- Header Judul Halaman --}}
+                <div class="mb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900">Edit Kursus</h1>
+                        <p class="text-slate-500 text-sm mt-1">Perbarui informasi dan materi pembelajaran kursus ini.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-                        <div class="mb-6 border-b border-gray-100 pb-4">
-                            <h3 class="text-lg font-bold text-gray-900">Informasi Dasar</h3>
-                            <p class="text-sm text-gray-500">Detail utama mengenai kursus ini.</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-6">
-                            <div>
-                                <x-input-label for="title" :value="__('Judul Kursus')" class="text-gray-700 font-semibold" />
-                                <x-text-input id="title" class="block mt-2 w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" type="text" name="title" :value="old('title', $course->title)" required placeholder="Contoh: Master Laravel 11 dari Nol" />
-                                <x-input-error :messages="$errors->get('title')" class="mt-2" />
-                            </div>
-
-                            <div>
-                                <x-input-label for="category_id" :value="__('Kategori')" class="text-gray-700 font-semibold" />
-                                <div class="relative mt-2">
-                                    <select name="category_id" id="category_id" class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 appearance-none py-2.5 px-4 bg-white">
-                                        <option value="">-- Pilih Kategori --</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category->id }}" {{ old('category_id', $course->category_id) == $category->id ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                    </div>
-                                </div>
-                                <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
-                            </div>
-
-                            <div>
-                                <x-input-label for="description" :value="__('Deskripsi Singkat')" class="text-gray-700 font-semibold" />
-                                <textarea name="description" id="description" rows="5" class="mt-2 w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm text-gray-700" placeholder="Jelaskan secara singkat apa yang akan dipelajari...">{{ old('description', $course->description) }}</textarea>
-                                <x-input-error :messages="$errors->get('description')" class="mt-2" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-                        <div class="mb-6 border-b border-gray-100 pb-4">
-                            <h3 class="text-lg font-bold text-gray-900">Media & Visual</h3>
-                            <p class="text-sm text-gray-500">Gambar sampul untuk menarik perhatian siswa.</p>
-                        </div>
-
-                        <div>
-                            <x-input-label for="thumbnail" :value="__('Thumbnail Kursus')" class="text-gray-700 font-semibold mb-2" />
+                    {{-- ==================== KOLOM KIRI (UTAMA) ==================== --}}
+                    <div class="lg:col-span-2 space-y-8">
+                        
+                        {{-- 1. Detail Kursus --}}
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                            <h3 class="text-lg font-bold text-slate-800 mb-5 border-b border-slate-100 pb-3">Informasi Umum</h3>
                             
-                            <div class="flex items-start gap-6">
-                                @if($course->thumbnail)
-                                    <div class="shrink-0">
-                                        <p class="text-xs text-gray-500 mb-2 font-medium">Saat Ini:</p>
-                                        <img src="{{ Storage::url($course->thumbnail) }}" alt="Current Thumbnail" class="h-40 w-64 object-cover rounded-xl border border-gray-200 shadow-sm">
-                                    </div>
-                                @endif
+                            <div class="space-y-5">
+                                {{-- Judul --}}
+                                <div>
+                                    <x-input-label for="title" :value="__('Judul Kursus')" class="mb-1" />
+                                    <input type="text" name="title" id="title" value="{{ old('title', $course->title) }}" required
+                                        class="block w-full px-4 py-2.5 text-base text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400 transition" 
+                                        placeholder="Contoh: Master Laravel 11 dari Nol">
+                                    <x-input-error :messages="$errors->get('title')" class="mt-1" />
+                                </div>
 
-                                <div class="flex-1">
-                                    <label class="block w-full cursor-pointer">
-                                        <span class="sr-only">Choose file</span>
-                                        <input id="thumbnail" type="file" name="thumbnail" class="block w-full text-sm text-gray-500
-                                          file:mr-4 file:py-2.5 file:px-4
-                                          file:rounded-full file:border-0
-                                          file:text-sm file:font-semibold
-                                          file:bg-indigo-50 file:text-indigo-700
-                                          hover:file:bg-indigo-100
-                                          transition cursor-pointer
-                                        "/>
-                                    </label>
-                                    <p class="mt-2 text-xs text-gray-500">Format: JPG, PNG. Disarankan rasio 16:9.</p>
-                                    <x-input-error :messages="$errors->get('thumbnail')" class="mt-2" />
+                                {{-- Deskripsi dengan WYSIWYG --}}
+                                <div class="prose max-w-none">
+                                    <x-input-label for="description" :value="__('Deskripsi Lengkap')" class="mb-1" />
+                                    <textarea name="description" id="description" rows="8" 
+                                        class="block w-full px-4 py-3 text-slate-700 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400 transition">{{ old('description', $course->description) }}</textarea>
+                                    <x-input-error :messages="$errors->get('description')" class="mt-1" />
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8" x-data="{ accessType: '{{ old('access_type', $course->access_type) }}' }">
-                        <div class="mb-6 border-b border-gray-100 pb-4">
-                            <h3 class="text-lg font-bold text-gray-900">Aksesibilitas</h3>
-                            <p class="text-sm text-gray-500">Siapa yang bisa mengakses kursus ini?</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <x-input-label for="access_type" :value="__('Tipe Akses')" class="text-gray-700 font-semibold" />
-                                <div class="mt-2 grid grid-cols-2 gap-3">
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="access_type" value="open" x-model="accessType" class="peer sr-only">
-                                        <div class="rounded-lg border border-gray-200 p-4 text-center hover:bg-gray-50 peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 transition">
-                                            <div class="font-bold text-sm">Open</div>
-                                            <div class="text-xs text-gray-500 mt-1">Gratis untuk semua</div>
-                                        </div>
-                                    </label>
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="access_type" value="code" x-model="accessType" class="peer sr-only">
-                                        <div class="rounded-lg border border-gray-200 p-4 text-center hover:bg-gray-50 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 transition">
-                                            <div class="font-bold text-sm">Private</div>
-                                            <div class="text-xs text-gray-500 mt-1">Butuh Kode Akses</div>
-                                        </div>
-                                    </label>
-                                </div>
+                        {{-- 2. Keypoints --}}
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                            <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-3">
+                                <h3 class="text-lg font-bold text-slate-800">Poin Pembelajaran</h3>
+                                
+                                {{-- TOMBOL TAMBAH BARIS (Style Konsisten) --}}
+                                <button type="button" onclick="addKeypoint()" 
+                                    class="text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 px-3 py-1.5 rounded-lg transition flex items-center gap-2">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Tambah Baris
+                                </button>
                             </div>
 
-                            <div x-show="accessType === 'code'" x-transition class="md:col-span-2">
-                                <x-input-label for="access_code" :value="__('Kode Akses (Password)')" class="text-gray-700 font-semibold" />
-                                <div class="mt-2 relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                    </div>
-                                    <x-text-input id="access_code" class="pl-10 block w-full border-gray-300 rounded-lg" type="text" name="access_code" :value="old('access_code', $course->access_code)" placeholder="Masukkan kode unik..." />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-                        <div class="mb-6 border-b border-gray-100 pb-4 flex justify-between items-center">
-                            <div>
-                                <h3 class="text-lg font-bold text-gray-900">Keypoints</h3>
-                                <p class="text-sm text-gray-500">Poin-poin utama yang akan dipelajari siswa.</p>
-                            </div>
-                            <button type="button" onclick="addKeypoint()" class="text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-100 transition">
-                                + Tambah Poin
-                            </button>
-                        </div>
-
-                        <div id="keypoints-container" class="space-y-3">
-                            @forelse($course->keypoints as $keypoint) 
-                                <div class="flex gap-2 items-center group">
-                                    <span class="text-gray-400 font-bold select-none">•</span>
-                                    <input type="text" name="course_keypoints[]" value="{{ $keypoint->name }}" class="flex-1 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                                    
-                                    @if(!$loop->first)
-                                        <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 p-2 transition">
+                            <div id="keypoints-container" class="space-y-3">
+                                {{-- 
+                                    LOOP DATA LAMA DARI DATABASE
+                                    Pastikan nama relasi di Model Course adalah 'keypoints' atau sesuaikan dengan nama kolom JSON Anda
+                                --}}
+                                @forelse($course->keypoints ?? [] as $keypoint)
+                                    <div class="flex items-center gap-3 animate-fade-in-down">
+                                        <div class="w-8 h-8 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center font-bold text-xs border border-slate-200 flex-shrink-0">{{ $loop->iteration }}</div>
+                                        
+                                        {{-- Cek apakah $keypoint berbentuk Object atau String --}}
+                                        <input type="text" name="course_keypoints[]" value="{{ is_string($keypoint) ? $keypoint : $keypoint->name }}" 
+                                            class="block w-full px-3 py-2 text-sm text-slate-700 border border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                                        
+                                        <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-red-500 p-2 transition">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
-                                    @endif
-                                </div>
-                            @empty
-                                <div class="flex gap-2 items-center">
-                                    <span class="text-gray-400 font-bold select-none">•</span>
-                                    <input type="text" name="course_keypoints[]" placeholder="Contoh: Memahami MVC pada Laravel" class="flex-1 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <x-input-label :value="__('Mode Sertifikat')" />
-                            <div class="flex gap-4 mt-2">
-                                <label><input type="radio" name="certificate_policy" value="manual" checked> Manual (Cek Admin)</label>
-                                <label><input type="radio" name="certificate_policy" value="auto"> Otomatis (Langsung)</label>
+                                    </div>
+                                @empty
+                                    {{-- Tampilkan 1 Input Kosong Jika Data Kosong --}}
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center font-bold text-xs border border-slate-200 flex-shrink-0">1</div>
+                                        <input type="text" name="course_keypoints[]" placeholder="Contoh: Memahami konsep MVC..." 
+                                            class="block w-full px-3 py-2 text-sm text-slate-700 border border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                                    </div>
+                                @endforelse
                             </div>
+                            <p class="text-xs text-slate-400 mt-3">* Masukkan poin-poin utama yang akan dipelajari pengguna.</p>
+                        </div>
+
                     </div>
 
-                    <div class="flex items-center justify-end gap-4 pt-4">
-                        <a href="{{ route('admin.courses.index') }}" class="px-6 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 font-bold hover:bg-gray-50 transition">
-                            Batal
-                        </a>
-                        <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition transform hover:-translate-y-0.5">
-                            Simpan Perubahan
-                        </button>
-                    </div>
+                    {{-- ==================== KOLOM KANAN (SIDEBAR) ==================== --}}
+                    <div class="lg:col-span-1 space-y-6">
+                        
+                        {{-- 1. Thumbnail --}}
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+                            <h3 class="text-sm font-bold text-slate-900 mb-3 uppercase tracking-wider">Thumbnail</h3>
+                            <div class="relative w-full h-44 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-400 transition overflow-hidden group cursor-pointer" id="drop-area">
+                                <input id="thumbnail" name="thumbnail" type="file" class="absolute inset-0 w-full h-full opacity-0 z-50 cursor-pointer" onchange="previewImage(event)">
+                                
+                                {{-- Placeholder (Sembunyikan jika gambar sudah ada) --}}
+                                <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4 {{ $course->thumbnail ? 'hidden' : '' }}" id="placeholder">
+                                    <svg class="w-8 h-8 text-slate-400 group-hover:text-indigo-500 mb-2 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    <span class="text-xs font-medium text-slate-600">Klik untuk ganti gambar</span>
+                                    <span class="text-[10px] text-slate-400 mt-1 block">Max 2MB (JPG/PNG)</span>
+                                </div>
 
+                                {{-- Preview Gambar Lama/Baru --}}
+                                <img id="preview" src="{{ $course->thumbnail ? Storage::url($course->thumbnail) : '' }}" 
+                                     class="absolute inset-0 w-full h-full object-cover {{ $course->thumbnail ? '' : 'hidden' }}" />
+                            </div>
+                            <x-input-error :messages="$errors->get('thumbnail')" class="mt-2" />
+                        </div>
+
+                        {{-- 2. Pengaturan Kursus (Grouped) --}}
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5 space-y-6">
+                            
+                            {{-- ============ CUSTOM DROPDOWN KATEGORI ============ --}}
+                            {{-- Inisialisasi SelectedId dan SelectedName dari Database --}}
+                            <div x-data="{
+                                open: false,
+                                search: '',
+                                selectedId: '{{ old('category_id', $course->category_id) }}',
+                                selectedName: '{{ $course->category ? $course->category->name : 'Pilih Kategori' }}',
+                                categories: {{ $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->toJson() }},
+                                get filteredCategories() {
+                                    if (this.search === '') return this.categories;
+                                    return this.categories.filter(item => item.name.toLowerCase().includes(this.search.toLowerCase()));
+                                }
+                            }">
+                                {{-- LABEL + TOMBOL BUAT BARU (Style Konsisten) --}}
+                                <div class="flex items-center justify-between mb-2">
+                                    <x-input-label :value="__('Kategori')" />
+                                    
+                                    <a href="{{ route('admin.categories.create') }}" 
+                                       class="text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 px-3 py-1.5 rounded-lg transition flex items-center gap-2">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                        Buat Baru
+                                    </a>
+                                </div>
+                                
+                                <input type="hidden" name="category_id" :value="selectedId">
+
+                                <div class="relative">
+                                    <button type="button" @click="open = !open" 
+                                        class="relative w-full py-2.5 pl-3 pr-10 text-left bg-white border border-slate-300 rounded-lg cursor-default focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm hover:border-slate-400 transition-colors"
+                                        aria-haspopup="listbox" 
+                                        :aria-expanded="open">
+                                        <span class="block truncate font-medium" 
+                                                :class="selectedId ? 'text-slate-900' : 'text-slate-500'"
+                                                x-text="selectedName"></span>
+                                        <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                            <svg class="w-5 h-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </span>
+                                    </button>
+
+                                    <div x-show="open" @click.away="open = false" 
+                                         x-transition:leave="transition ease-in duration-100"
+                                         x-transition:leave-start="opacity-100"
+                                         x-transition:leave-end="opacity-0"
+                                         class="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" 
+                                         style="display: none;">
+                                        
+                                        <div class="sticky top-0 z-10 bg-white p-2 border-b border-slate-100">
+                                            <input type="text" x-model="search" 
+                                                class="block w-full px-3 py-2 text-sm border-slate-200 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 placeholder-slate-400" 
+                                                placeholder="Cari kategori...">
+                                        </div>
+
+                                        <ul class="py-1 overflow-auto max-h-48">
+                                            <template x-for="item in filteredCategories" :key="item.id">
+                                                <li class="text-slate-900 cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-50 hover:text-indigo-900 transition-colors" 
+                                                    @click="selectedId = item.id; selectedName = item.name; open = false; search = ''">
+                                                    <span class="block truncate" :class="selectedId == item.id ? 'font-bold' : 'font-normal'" x-text="item.name"></span>
+                                                    <span x-show="selectedId == item.id" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+                                                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                                    </span>
+                                                </li>
+                                            </template>
+                                            <li x-show="filteredCategories.length === 0" class="text-slate-500 cursor-default select-none relative py-2 pl-3 pr-9 text-sm text-center">Tidak ditemukan.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <x-input-error :messages="$errors->get('category_id')" class="mt-1" />
+                            </div>
+                            
+                            <hr class="border-slate-100">
+
+                            {{-- Aksesibilitas (Dengan Init Data dari DB) --}}
+                            <div x-data="{ accessType: '{{ old('access_type', $course->access_type) }}' }">
+                                <label class="text-sm font-bold text-slate-900 mb-3 block">Akses Kursus</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all"
+                                        :class="accessType === 'open' ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'">
+                                        <input type="radio" name="access_type" value="open" x-model="accessType" class="text-indigo-600 focus:ring-indigo-500">
+                                        <div class="flex-1"><span class="block text-sm font-bold text-slate-900">Terbuka (Gratis)</span></div>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all"
+                                        :class="accessType === 'code' ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'">
+                                        <input type="radio" name="access_type" value="code" x-model="accessType" class="text-indigo-600 focus:ring-indigo-500">
+                                        <div class="flex-1"><span class="block text-sm font-bold text-slate-900">Privat (Kode)</span></div>
+                                    </label>
+                                </div>
+                                <div x-show="accessType === 'code'" x-collapse class="mt-3">
+                                    <input type="text" name="access_code" value="{{ old('access_code', $course->access_code) }}" placeholder="Misal: KLS-VIP" 
+                                        class="block w-full px-3 py-2 text-sm text-slate-900 border border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 uppercase tracking-wide placeholder-slate-400">
+                                </div>
+                            </div>
+
+                            <hr class="border-slate-100">
+
+                            {{-- Sertifikat (Dengan Init Data dari DB) --}}
+                            <div x-data="{ certPolicy: '{{ old('certificate_policy', $course->certificate_policy) }}' }">
+                                <label class="text-sm font-bold text-slate-900 mb-3 block">Penerbitan Sertifikat</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="certificate_policy" value="manual" x-model="certPolicy" class="peer sr-only">
+                                        <div class="text-center px-2 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 peer-checked:bg-amber-50 peer-checked:text-amber-700 peer-checked:border-amber-300 transition select-none">Manual</div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="certificate_policy" value="auto" x-model="certPolicy" class="peer sr-only">
+                                        <div class="text-center px-2 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 peer-checked:bg-green-50 peer-checked:text-green-700 peer-checked:border-green-300 transition select-none">Otomatis</div>
+                                    </label>
+                                </div>
+                                <div class="mt-2 bg-slate-50 p-2 rounded text-[10px] text-slate-500 leading-tight border border-slate-100">
+                                    <span x-show="certPolicy === 'manual'">Admin harus memverifikasi secara manual.</span>
+                                    <span x-show="certPolicy === 'auto'">Sertifikat terbit otomatis saat selesai.</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
                 </div>
-            </form>
-        </div>
+
+                {{-- ==================== STATIC ACTION BAR ==================== --}}
+                <div class="mt-8 pt-6 border-t border-slate-200 flex flex-col-reverse sm:flex-row justify-end items-center gap-3">
+                    <a href="{{ route('admin.courses.index') }}" class="w-full sm:w-auto text-center px-6 py-3 rounded-lg border border-slate-300 text-slate-700 font-bold text-sm hover:bg-slate-50 transition">
+                        Batal
+                    </a>
+
+                    <button type="submit" class="w-full sm:w-auto flex justify-center items-center gap-2 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm transition shadow-lg shadow-indigo-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Simpan Perubahan
+                    </button>
+                </div>
+
+            </div>
+
+        </form>
     </div>
 
     @push('scripts')
+    <script src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
+
     <script>
+        // Init CKEditor untuk Deskripsi
+        ClassicEditor
+            .create(document.querySelector('#description'))
+            .then(editor => {
+                editor.ui.view.editable.element.style.minHeight = '300px';
+            })
+            .catch(error => { console.error(error); });
+
         function addKeypoint() {
             const container = document.getElementById('keypoints-container');
-            const inputDiv = document.createElement('div');
-            inputDiv.className = 'flex gap-2 items-center group animate-fade-in-down';
-            
-            inputDiv.innerHTML = `
-                <span class="text-gray-400 font-bold select-none">•</span>
-                <input type="text" name="course_keypoints[]" placeholder="Tulis poin pembelajaran..." 
-                    class="flex-1 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 p-2 transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
+            const count = container.children.length + 1;
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-3 animate-fade-in-down';
+            div.innerHTML = `
+                <div class="w-8 h-8 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center font-bold text-xs border border-slate-200 flex-shrink-0">${count}</div>
+                <input type="text" name="course_keypoints[]" placeholder="Poin pembelajaran selanjutnya..." class="block w-full px-3 py-2 text-sm text-slate-700 border border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-red-500 p-2 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
             `;
-            
-            container.appendChild(inputDiv);
+            container.appendChild(div);
+        }
+
+        function previewImage(event) {
+            const preview = document.getElementById('preview');
+            const placeholder = document.getElementById('placeholder');
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    placeholder.classList.add('hidden'); // Sembunyikan placeholder jika ada preview baru
+                }
+                reader.readAsDataURL(file);
+            }
         }
     </script>
     <style>
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .animate-fade-in-down { animation: fadeInDown 0.3s ease-out; }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .overflow-auto::-webkit-scrollbar { width: 6px; }
+        .overflow-auto::-webkit-scrollbar-track { background: #f1f5f9; }
+        .overflow-auto::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+
+        /* Fix CKEditor Tailwind Reset */
+        .ck-content ul { list-style-type: disc; padding-left: 1.5rem; }
+        .ck-content ol { list-style-type: decimal; padding-left: 1.5rem; }
+        .ck-content a { color: #4f46e5; text-decoration: underline; }
+        .ck-editor__editable { 
+            border-radius: 0 0 0.5rem 0.5rem !important; 
+            min-height: 300px !important;
         }
-        .animate-fade-in-down {
-            animation: fadeInDown 0.3s ease-out;
-        }
+        .ck-toolbar { border-radius: 0.5rem 0.5rem 0 0 !important; }
     </style>
     @endpush
 </x-app-layout>

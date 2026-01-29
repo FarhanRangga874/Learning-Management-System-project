@@ -7,15 +7,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob { animation: blob 7s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
-        
         @keyframes shimmer {
             100% { transform: translateX(100%); }
         }
@@ -109,7 +100,8 @@
                 </div>
             @else
             
-            {{-- HEADER JUDUL MATERI --}}
+            {{-- HEADER JUDUL MATERI STANDARD (Hanya muncul jika BUKAN mode teks) --}}
+            @if($currentLesson->type != 'text')
             <div class="mb-8">
                 <div class="flex items-center gap-3 md:gap-4">
                     <div class="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm border border-indigo-100">
@@ -119,8 +111,6 @@
                             <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                         @elseif($currentLesson->type == 'assignment')
                             <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                        @else
-                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         @endif
                     </div>
                     
@@ -129,6 +119,7 @@
                     </h1>
                 </div>
             </div>
+            @endif
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
                 
@@ -180,10 +171,11 @@
                             @endif
                         </div>
 
-                    {{-- 2. TAMPILAN MATERI STANDAR --}}
+                    {{-- 2. TAMPILAN MATERI STANDAR & TEKS --}}
                     @else
                     
                         @if($currentLesson->type != 'text')
+                            {{-- PLAYER VIDEO / PDF --}}
                             <div class="relative w-full {{ $currentLesson->type == 'pdf' ? 'h-[50vh] md:h-[80vh]' : 'aspect-video' }} bg-black rounded-2xl overflow-hidden shadow-lg border border-gray-100 z-10 mb-6 md:mb-8">
                                 @if($currentLesson->type == 'video')
                                     @if($currentLesson->video_source == 'upload')
@@ -203,16 +195,26 @@
                                 @endif
                             </div>
                         @else 
-                            {{-- Banner Text --}}
-                            <div class="w-full bg-gradient-to-r from-indigo-50 via-white to-white rounded-2xl p-6 md:p-8 border border-indigo-100 mb-8 flex flex-col md:flex-row items-center gap-6 shadow-sm overflow-hidden relative">
-                                <div class="absolute top-0 left-0 w-32 h-32 bg-indigo-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-                                <div class="flex-shrink-0 relative z-10">
-                                    <img src="https://illustrations.popsy.co/amber/woman-reading-tablet.svg" alt="Reading" class="w-32 h-32 md:w-40 md:h-40 object-contain hover:scale-105 transition-transform">
-                                </div>
-                                <div class="text-center md:text-left flex-1 relative z-10">
-                                    <span class="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-2">Mode Membaca</span>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-1">Siapkan Catatan Anda</h3>
-                                    <p class="text-gray-500 text-sm leading-relaxed">Materi ini berbentuk bacaan teks komprehensif.</p>
+                            
+                            {{-- HEADER ARTIKEL DENGAN GRID PATTERN (STATIS) --}}
+                            <div class="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-8 shadow-sm border border-slate-200"
+                                style="background-color: #f8fafc; background-image: linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px); background-size: 24px 24px;">
+                                
+                                {{-- Overlay Gradien Putih ke Transparan (Untuk memudarkan grid di bagian bawah agar teks terbaca jelas) --}}
+                                <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+
+                                {{-- Konten Header --}}
+                                <div class="absolute bottom-0 left-0 p-6 md:p-8 z-10 w-full">
+                                    {{-- Badge Mode Membaca --}}
+                                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-3 border border-indigo-100 shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                        Mode Membaca
+                                    </div>
+                                    
+                                    {{-- Judul Materi (Warna Gelap) --}}
+                                    <h1 class="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight max-w-4xl">
+                                        {{ $currentLesson->title }}
+                                    </h1>
                                 </div>
                             </div>
                         @endif
@@ -232,12 +234,7 @@
                                 @elseif($currentLesson->type == 'pdf')
                                     <span class="font-medium text-gray-900 bg-gray-100 px-3 py-1 rounded-full border border-gray-200 text-xs md:text-sm">Dokumen PDF</span>
                                 @else
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-medium text-gray-900 bg-gray-100 px-3 py-1 rounded-full border border-gray-200 text-xs md:text-sm">Bacaan Teks</span>
-                                        <span class="text-xs text-gray-400 flex items-center gap-1">
-                                            {{ ceil(str_word_count(strip_tags($currentLesson->content)) / 200) }} Menit Baca
-                                        </span>
-                                    </div>
+                                
                                 @endif
                             </div>
                             
