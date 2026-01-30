@@ -62,6 +62,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('courses.chapters', ChapterController::class);
     Route::resource('chapters.lessons', LessonController::class);
     Route::resource('faqs', AdminFaqController::class);
+    Route::get('courses/{course}/assignments', [CourseController::class, 'assignments'])->name('courses.assignments');
     
     // Manajemen Soal (Opsional jika masih pakai route terpisah selain di LessonController)
     Route::get('lessons/{lesson}/questions', [QuestionController::class, 'index'])->name('lessons.questions.index');

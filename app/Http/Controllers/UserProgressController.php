@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\UserAnswer;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\DB; // PENTING: Tambahkan ini untuk transaksi database
+use Illuminate\Support\Facades\DB;
 
 class UserProgressController extends Controller
 {
@@ -16,25 +16,32 @@ class UserProgressController extends Controller
      */
     public function index(Lesson $lesson)
     {
-        // Ambil user yang memiliki jawaban pada lesson ini
-        // Menggunakan whereHas untuk filter hanya user yang sudah submit
+        // 1. Ambil user yang memiliki jawaban pada lesson ini
         $users = User::whereHas('answers', function($query) use ($lesson) {
             $query->whereHas('question', function($q) use ($lesson) {
                 $q->where('lesson_id', $lesson->id);
             });
         })->with(['answers' => function($query) use ($lesson) {
-             // Load jawaban khusus lesson ini agar bisa dihitung total skornya
+             // Load jawaban beserta detail pertanyaannya (penting untuk cek tipe soal)
              $query->whereHas('question', function($q) use ($lesson) {
                 $q->where('lesson_id', $lesson->id);
-            });
+            })->with('question'); 
         }])->paginate(10);
 
-        // Hitung total skor untuk tampilan di tabel
+        // 2. Loop setiap user untuk hitung skor & tentukan status
         foreach ($users as $user) {
             $user->total_score = $user->answers->sum('score');
             
-            // Logika Status Sederhana:
-            $user->grading_status = $user->total_score > 0 ? 'Sudah Dinilai' : 'Perlu Koreksi';
+            // --- LOGIKA STATUS BARU ---
+            // Cek apakah ada soal ESSAY yang nilainya masih 0 (Asumsi 0 = belum dinilai)
+            // Kita gunakan collection method 'contains'
+            $hasUngradedEssay = $user->answers->contains(function ($ans) {
+                return $ans->question->type === 'essay' && $ans->score === 0;
+            });
+
+            // Jika ada essay bernilai 0 -> Perlu Koreksi.
+            // Jika tidak ada essay 0 (atau hanya ada PG) -> Selesai.
+            $user->grading_status = $hasUngradedEssay ? 'Perlu Koreksi' : 'Selesai';
         }
 
         return view('admin.lessons.users', compact('lesson', 'users'));
@@ -45,8 +52,6 @@ class UserProgressController extends Controller
      */
     public function show(Lesson $lesson, User $user)
     {
-        // Ambil semua jawaban siswa tersebut KHUSUS untuk lesson ini
-        // Disertai data pertanyaannya (question)
         $answers = UserAnswer::with('question')
             ->where('user_id', $user->id)
             ->whereHas('question', function($q) use ($lesson) {
@@ -58,7 +63,71 @@ class UserProgressController extends Controller
     }
 
     /**
-     * Update skor untuk satu jawaban spesifik (aksi simpan nilai individual).
+     * UPDATE MASSAL: Auto-Grade PG & Manual Grade Essay
+     */
+    public function updateAllScores(Request $request, Lesson $lesson, User $user)
+    {
+        // Validasi: scores boleh null/kosong jika soalnya hanya Pilihan Ganda (karena PG tidak kirim input)
+        $request->validate([
+            'scores' => 'nullable|array', 
+            'scores.*' => 'integer|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // 1. Ambil semua jawaban user untuk lesson ini dari Database
+            // Kita loop berdasarkan data DB, bukan data Request, agar PG tetap ternilai meski tidak ada di request
+            $userAnswers = UserAnswer::with('question')
+                ->where('user_id', $user->id)
+                ->whereHas('question', function($q) use ($lesson) {
+                    $q->where('lesson_id', $lesson->id);
+                })->get();
+
+            foreach ($userAnswers as $ans) {
+                $score = 0;
+
+                // --- LOGIKA AUTO-GRADING ---
+                
+                if ($ans->question->type == 'multiple_choice') {
+                    // A. PILIHAN GANDA: Nilai Otomatis by System
+                    // Cek apakah jawaban user SAMA PERSIS dengan kunci jawaban
+                    if ($ans->answer === $ans->question->correct_answer) {
+                        $score = $ans->question->points; // Dapat Poin Penuh
+                    } else {
+                        $score = 0; // Salah
+                    }
+                } 
+                else {
+                    // B. ESSAY: Nilai Manual dari Input Admin
+                    // Ambil nilai dari input request berdasarkan ID jawaban
+                    // Jika tidak ada di request (misal admin lupa isi), pakai nilai lama ($ans->score)
+                    $inputScore = $request->scores[$ans->id] ?? $ans->score;
+                    
+                    // Pastikan nilai tidak melebihi poin maksimal soal
+                    $score = min($inputScore, $ans->question->points); 
+                }
+
+                // 2. Update ke Database
+                $ans->update([
+                    'score' => $score,
+                    'is_correct' => $score > 0 // Anggap benar jika dapat nilai > 0
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.lessons.users.index', $lesson->id)
+                ->with('success', 'Penilaian berhasil disimpan! (Pilihan Ganda dinilai otomatis)');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update skor satuan (Opsional, jika masih dibutuhkan untuk ajax/manual satu per satu)
      */
     public function updateScore(Request $request, UserAnswer $userAnswer)
     {
@@ -72,48 +141,5 @@ class UserProgressController extends Controller
         ]);
 
         return back()->with('success', 'Nilai berhasil diperbarui!');
-    }
-
-    /**
-     * UPDATE MASSAL: Simpan semua nilai sekaligus dari halaman grading.
-     */
-    public function updateAllScores(Request $request, Lesson $lesson, User $user)
-    {
-        // Validasi input array scores
-        $request->validate([
-            'scores' => 'required|array',
-            'scores.*' => 'required|integer|min:0',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            foreach ($request->scores as $answerId => $score) {
-                // Cari jawaban berdasarkan ID
-                $userAnswer = UserAnswer::find($answerId);
-                
-                // Pastikan jawaban ada dan milik user yang sedang dinilai (keamanan)
-                if ($userAnswer && $userAnswer->user_id == $user->id) {
-                    
-                    // Pastikan nilai tidak melebihi poin maksimal soal
-                    if ($score <= $userAnswer->question->points) {
-                        $userAnswer->update([
-                            'score' => $score,
-                            'is_correct' => $score > 0
-                        ]);
-                    }
-                }
-            }
-
-            DB::commit();
-
-            // Redirect kembali ke daftar user setelah simpan semua
-            return redirect()->route('admin.lessons.users.index', $lesson->id)
-                ->with('success', 'Semua nilai berhasil disimpan untuk siswa ' . $user->name);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat menyimpan nilai: ' . $e->getMessage());
-        }
     }
 }

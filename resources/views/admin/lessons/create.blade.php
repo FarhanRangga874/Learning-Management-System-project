@@ -124,7 +124,7 @@
 
                                 </div>
 
-                                {{-- 4. Builder Soal (FITUR INI TETAP ADA) --}}
+                                {{-- 4. Builder Soal (FITUR UTAMA: Dynamic Grading Weight) --}}
                                 <div x-show="type === 'assignment'" class="bg-white border border-purple-200 rounded-xl shadow-sm overflow-hidden mb-6" x-transition>
                                     
                                     {{-- Header Builder --}}
@@ -133,7 +133,7 @@
                                             <h3 class="font-bold text-purple-900 text-lg">Kelola Soal Kuis</h3>
                                             <p class="text-xs text-purple-700">Tambahkan soal pilihan ganda atau essay.</p>
                                         </div>
-                                        <button type="button" @click="questions.push({ text: '', type: 'multiple_choice', points: 10, options: {A:'', B:'', C:'', D:''}, correct_answer: 'A' })" 
+                                        <button type="button" @click="questions.push({ text: '', type: 'multiple_choice', points: 0, options: {A:'', B:'', C:'', D:''}, correct_answer: 'A' })" 
                                             class="text-xs bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 font-bold transition flex items-center gap-1 shadow-sm shadow-purple-200">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                             Tambah Soal
@@ -168,17 +168,33 @@
                                                     <input type="text" :name="'questions['+index+'][text]'" x-model="q.text" class="w-full text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" placeholder="Tulis pertanyaan di sini..." required>
                                                 </div>
                                                 
-                                                <div class="grid grid-cols-2 gap-4 mb-4">
-                                                    <div>
+                                                {{-- Opsi Tipe Soal & Bobot --}}
+                                                <div class="flex gap-4 mb-4 items-end">
+                                                    <div class="w-1/2">
                                                         <label class="block text-xs font-bold text-slate-500 mb-1">Jenis Soal</label>
                                                         <select :name="'questions['+index+'][type]'" x-model="q.type" class="w-full text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                                             <option value="multiple_choice">Pilihan Ganda</option>
                                                             <option value="essay">Essay</option>
                                                         </select>
                                                     </div>
-                                                    <div>
+                                                    
+                                                    {{-- DYNAMIC GRADING WEIGHT UI --}}
+                                                    <div class="w-1/2">
                                                         <label class="block text-xs font-bold text-slate-500 mb-1">Bobot Poin</label>
-                                                        <input type="number" :name="'questions['+index+'][points]'" x-model="q.points" class="w-full text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" placeholder="10">
+                                                        
+                                                        {{-- A. Essay: Input Manual --}}
+                                                        <div x-show="q.type === 'essay'">
+                                                            <input type="number" :name="'questions['+index+'][points]'" x-model="q.points" class="w-full text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-center font-bold text-purple-700" placeholder="Contoh: 20">
+                                                            <p class="text-[10px] text-slate-400 mt-1">*Wajib isi untuk Essay</p>
+                                                        </div>
+
+                                                        {{-- B. Pilihan Ganda: Auto Readonly --}}
+                                                        <div x-show="q.type === 'multiple_choice'">
+                                                            <div class="w-full h-[38px] bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-xs font-bold italic cursor-not-allowed select-none">
+                                                                Auto Calculated
+                                                            </div>
+                                                            <p class="text-[10px] text-indigo-400 mt-1">*Otomatis dari sisa bobot</p>
+                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -224,9 +240,6 @@
                 {{-- SIDEBAR KANAN --}}
                 <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                        {{-- Header Sidebar --}}
-  
-                        
                         {{-- Isi Sidebar (Tanpa Padding agar menempel) --}}
                         <div>
                              @include('admin.chapters.sidebar')

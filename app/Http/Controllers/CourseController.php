@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB; 
 use Illuminate\Routing\Controller;
 use App\Models\User; 
+use App\Models\Lesson;
+use App\Models\UserAnswer;
 
 class CourseController extends Controller
 {
@@ -197,5 +199,34 @@ class CourseController extends Controller
         });
         
         return redirect()->route('admin.courses.index')->with('success', 'Kursus berhasil dihapus!');
+    }
+
+    public function assignments(Course $course)
+    {
+        // Ambil assignment
+        $assignments = Lesson::whereHas('chapter', function($q) use ($course) {
+            $q->where('course_id', $course->id);
+        })->where('type', 'assignment')->with('chapter')->get();
+
+        // Hitung "Pending Grading" untuk setiap assignment
+        foreach($assignments as $assignment) {
+            // Cari jumlah User yang sudah jawab tapi total skornya masih 0 (atau logika lain sesuai kebutuhan)
+            // Cara yang lebih akurat: Hitung UserAnswer yang skornya belum diisi (jika nullable) atau skor 0
+            // Namun, karena di sistem kita skor default 0, kita bisa hitung user unik yang sudah jawab.
+            
+            // Logika: Kita butuh tahu berapa USER yang jawabannya belum kita sentuh.
+            // Asumsi: Jika admin sudah menilai, skor > 0.
+            // Jika belum menilai, skor = 0.
+            
+            $pendingCount = \App\Models\User::whereHas('answers', function($q) use ($assignment) {
+                $q->whereHas('question', function($subQ) use ($assignment) {
+                    $subQ->where('lesson_id', $assignment->id);
+                })->where('score', 0); // Asumsi 0 = belum dinilai/salah total
+            })->count();
+
+            $assignment->pending_count = $pendingCount;
+        }
+
+        return view('admin.courses.assignments', compact('course', 'assignments'));
     }
 }
