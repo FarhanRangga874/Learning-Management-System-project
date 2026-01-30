@@ -13,7 +13,7 @@
     <div class="pb-24 bg-slate-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             
-            {{-- Header --}}
+            {{-- Header Title --}}
             <div class="mb-8">
                 <h1 class="text-2xl font-bold text-slate-900">Buat Materi Baru</h1>
                 <p class="text-slate-500 text-sm mt-1">Tambahkan konten pembelajaran ke dalam bab <strong>{{ $chapter->title }}</strong>.</p>
@@ -21,18 +21,18 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
-                {{-- ==================== KOLOM KIRI (8/12): FORM INPUT ==================== --}}
+                {{-- KOLOM KIRI (FORM) --}}
                 <div class="lg:col-span-8">
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                         
-                        {{-- Form Wrapper --}}
                         <form method="POST" action="{{ route('admin.chapters.lessons.store', $chapter->id) }}" enctype="multipart/form-data" class="p-6">
                             @csrf
 
                             {{-- Alpine Data --}}
                             <div x-data="{ 
-                                type: '{{ old('type', 'video') }}', 
-                                videoSource: '{{ old('video_source', 'upload') }}' 
+                                type: '{{ old('type', $type ?? 'video') }}', 
+                                videoSource: 'upload',
+                                questions: [] 
                             }">
 
                                 {{-- 1. Judul Materi --}}
@@ -42,47 +42,44 @@
                                     <x-input-error :messages="$errors->get('title')" class="mt-2" />
                                 </div>
 
-                                {{-- 2. Tipe Materi (Visual Cards) --}}
+                                {{-- 2. Tipe Konten (Visual Cards) --}}
                                 <div class="mb-6">
                                     <label class="block text-sm font-bold text-slate-700 mb-3">Tipe Konten</label>
+                                    <input type="hidden" name="type" x-model="type">
+                                    
                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                         {{-- Video --}}
-                                        <label class="cursor-pointer relative">
-                                            <input type="radio" name="type" value="video" x-model="type" class="peer sr-only">
-                                            <div class="p-3 rounded-lg border-2 border-slate-100 hover:border-indigo-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition text-center h-full flex flex-col items-center justify-center gap-2">
-                                                <svg class="w-6 h-6 text-slate-400 peer-checked:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                <span class="text-xs font-bold text-slate-600 peer-checked:text-indigo-800">Video</span>
-                                            </div>
-                                        </label>
-                                        {{-- Text --}}
-                                        <label class="cursor-pointer relative">
-                                            <input type="radio" name="type" value="text" x-model="type" class="peer sr-only">
-                                            <div class="p-3 rounded-lg border-2 border-slate-100 hover:border-indigo-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition text-center h-full flex flex-col items-center justify-center gap-2">
-                                                <svg class="w-6 h-6 text-slate-400 peer-checked:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                                <span class="text-xs font-bold text-slate-600 peer-checked:text-indigo-800">Artikel</span>
-                                            </div>
-                                        </label>
+                                        <div @click="type = 'video'" class="cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2" 
+                                             :class="type === 'video' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-100 hover:border-indigo-200 text-slate-600'">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            <span class="text-xs font-bold">Video</span>
+                                        </div>
+                                        
+                                        {{-- Artikel --}}
+                                        <div @click="type = 'text'" class="cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2" 
+                                             :class="type === 'text' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-100 hover:border-indigo-200 text-slate-600'">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            <span class="text-xs font-bold">Artikel</span>
+                                        </div>
+
                                         {{-- PDF --}}
-                                        <label class="cursor-pointer relative">
-                                            <input type="radio" name="type" value="pdf" x-model="type" class="peer sr-only">
-                                            <div class="p-3 rounded-lg border-2 border-slate-100 hover:border-indigo-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition text-center h-full flex flex-col items-center justify-center gap-2">
-                                                <svg class="w-6 h-6 text-slate-400 peer-checked:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                                <span class="text-xs font-bold text-slate-600 peer-checked:text-indigo-800">PDF</span>
-                                            </div>
-                                        </label>
-                                        {{-- Assignment --}}
-                                        <label class="cursor-pointer relative">
-                                            <input type="radio" name="type" value="assignment" x-model="type" class="peer sr-only">
-                                            <div class="p-3 rounded-lg border-2 border-slate-100 hover:border-indigo-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition text-center h-full flex flex-col items-center justify-center gap-2">
-                                                <svg class="w-6 h-6 text-slate-400 peer-checked:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                                                <span class="text-xs font-bold text-slate-600 peer-checked:text-indigo-800">Tugas</span>
-                                            </div>
-                                        </label>
+                                        <div @click="type = 'pdf'" class="cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2" 
+                                             :class="type === 'pdf' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-100 hover:border-indigo-200 text-slate-600'">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                            <span class="text-xs font-bold">PDF</span>
+                                        </div>
+
+                                        {{-- Tugas --}}
+                                        <div @click="type = 'assignment'" class="cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2" 
+                                             :class="type === 'assignment' ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-slate-100 hover:border-purple-200 text-slate-600'">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                            <span class="text-xs font-bold">Tugas</span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {{-- 3. Area Input Dinamis --}}
-                                <div class="bg-slate-50 border border-slate-100 rounded-lg p-5">
+                                <div class="bg-slate-50 border border-slate-100 rounded-xl p-5 mb-6">
                                     
                                     {{-- Video Input --}}
                                     <div x-show="type === 'video'" x-transition>
@@ -99,13 +96,11 @@
 
                                         <div x-show="videoSource === 'upload'">
                                             <input type="file" name="video_file" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white file:text-indigo-700 hover:file:bg-indigo-50 file:border file:border-slate-200 transition cursor-pointer">
-                                            <p class="text-xs text-slate-400 mt-2">Maksimal ukuran file: 100MB (sesuaikan server).</p>
-                                            <x-input-error :messages="$errors->get('video_file')" class="mt-2" />
+                                            <p class="text-xs text-slate-400 mt-2">Maksimal ukuran file sesuai konfigurasi server.</p>
                                         </div>
 
                                         <div x-show="videoSource === 'youtube'">
                                             <x-text-input class="block w-full" type="text" name="video_url" placeholder="https://youtube.com/watch?v=..." />
-                                            <x-input-error :messages="$errors->get('video_url')" class="mt-2" />
                                         </div>
                                     </div>
 
@@ -113,82 +108,131 @@
                                     <div x-show="type === 'pdf'" x-transition style="display: none;">
                                         <label class="block text-sm font-bold text-slate-700 mb-2">Upload File PDF</label>
                                         <input type="file" name="pdf_file" accept="application/pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white file:text-red-700 hover:file:bg-red-50 file:border file:border-slate-200 transition cursor-pointer">
-                                        <x-input-error :messages="$errors->get('pdf_file')" class="mt-2" />
                                     </div>
 
-                                    {{-- Text / Assignment Input --}}
+                                    {{-- Text / Assignment Content --}}
                                     <div x-show="type === 'text' || type === 'assignment'" x-transition style="display: none;">
-                                        <div x-show="type === 'assignment'" class="mb-3 p-3 bg-purple-100 text-purple-800 rounded-md text-sm border border-purple-200">
-                                            <strong>Info:</strong> Tuliskan instruksi tugas di bawah ini. Soal quiz dapat dikelola setelah materi berhasil disimpan.
+                                        <div x-show="type === 'assignment'" class="mb-3 p-3 bg-purple-50 text-purple-800 rounded-lg text-sm border border-purple-100 flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-purple-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            <div>
+                                                <strong>Instruksi Tugas:</strong> Jelaskan detail tugas di sini. Anda dapat menambahkan soal kuis di bagian bawah.
+                                            </div>
                                         </div>
-                                        <label class="block text-sm font-bold text-slate-700 mb-2" x-text="type === 'assignment' ? 'Instruksi Tugas' : 'Isi Artikel'"></label>
-                                        <textarea id="content" name="content" class="block w-full border-gray-300 rounded-md shadow-sm">{{ old('content') }}</textarea>
-                                        <x-input-error :messages="$errors->get('content')" class="mt-2" />
+                                        <label class="block text-sm font-bold text-slate-700 mb-2" x-text="type === 'assignment' ? 'Deskripsi Tugas' : 'Isi Artikel'"></label>
+                                        <textarea id="content" name="content" class="block w-full border-gray-300 rounded-md shadow-sm h-40"></textarea>
                                     </div>
 
                                 </div>
 
-                            </div> {{-- End Alpine Data --}}
+                                {{-- 4. Builder Soal (FITUR INI TETAP ADA) --}}
+                                <div x-show="type === 'assignment'" class="bg-white border border-purple-200 rounded-xl shadow-sm overflow-hidden mb-6" x-transition>
+                                    
+                                    {{-- Header Builder --}}
+                                    <div class="bg-purple-50 px-6 py-4 border-b border-purple-100 flex justify-between items-center">
+                                        <div>
+                                            <h3 class="font-bold text-purple-900 text-lg">Kelola Soal Kuis</h3>
+                                            <p class="text-xs text-purple-700">Tambahkan soal pilihan ganda atau essay.</p>
+                                        </div>
+                                        <button type="button" @click="questions.push({ text: '', type: 'multiple_choice', points: 10, options: {A:'', B:'', C:'', D:''}, correct_answer: 'A' })" 
+                                            class="text-xs bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 font-bold transition flex items-center gap-1 shadow-sm shadow-purple-200">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                            Tambah Soal
+                                        </button>
+                                    </div>
 
-                            {{-- Tombol Simpan (Di dalam form agar stabil) --}}
-                            <div class="mt-8 pt-6 border-t border-slate-100 flex items-center gap-4">
-                                <x-primary-button class="bg-indigo-600 hover:bg-indigo-700">
-                                    {{ __('Simpan Materi') }}
-                                </x-primary-button>
-                                <a href="{{ route('admin.courses.chapters.index', $course->id) }}" class="text-sm text-slate-600 hover:text-slate-900 font-medium">
-                                    Batal
-                                </a>
+                                    <div class="p-6 space-y-6">
+                                        {{-- Empty State --}}
+                                        <template x-if="questions.length === 0">
+                                            <div class="text-center py-8 border-2 border-dashed border-slate-200 rounded-xl">
+                                                <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                                <p class="text-slate-400 text-sm font-medium">Belum ada soal yang ditambahkan.</p>
+                                            </div>
+                                        </template>
+                                        
+                                        {{-- Loop Questions --}}
+                                        <template x-for="(q, index) in questions" :key="index">
+                                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 relative transition hover:border-purple-200 hover:shadow-sm">
+                                                
+                                                {{-- Header Per Soal --}}
+                                                <div class="flex justify-between items-center mb-4">
+                                                    <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-md border border-purple-200" x-text="'Soal #' + (index+1)"></span>
+                                                    <button type="button" @click="questions.splice(index, 1)" class="text-red-500 hover:text-red-700 font-bold text-xs flex items-center gap-1 transition">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                        Hapus
+                                                    </button>
+                                                </div>
+
+                                                {{-- Input Pertanyaan --}}
+                                                <div class="mb-4">
+                                                    <label class="block text-xs font-bold text-slate-500 mb-1">Pertanyaan</label>
+                                                    <input type="text" :name="'questions['+index+'][text]'" x-model="q.text" class="w-full text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" placeholder="Tulis pertanyaan di sini..." required>
+                                                </div>
+                                                
+                                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-slate-500 mb-1">Jenis Soal</label>
+                                                        <select :name="'questions['+index+'][type]'" x-model="q.type" class="w-full text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                                            <option value="multiple_choice">Pilihan Ganda</option>
+                                                            <option value="essay">Essay</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-slate-500 mb-1">Bobot Poin</label>
+                                                        <input type="number" :name="'questions['+index+'][points]'" x-model="q.points" class="w-full text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" placeholder="10">
+                                                    </div>
+                                                </div>
+
+                                                {{-- Area Pilihan Ganda --}}
+                                                <div x-show="q.type === 'multiple_choice'" class="bg-white p-4 rounded-lg border border-slate-200">
+                                                    <label class="block text-xs font-bold text-slate-500 mb-3">Opsi Jawaban & Kunci</label>
+                                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        <template x-for="opt in ['A', 'B', 'C', 'D']">
+                                                            <div class="flex items-center gap-2">
+                                                                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-xs shrink-0" x-text="opt"></div>
+                                                                
+                                                                <input type="text" :name="'questions['+index+'][options]['+opt+']'" x-model="q.options[opt]" 
+                                                                    class="w-full text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" :placeholder="'Jawaban ' + opt">
+                                                                
+                                                                <div class="shrink-0" title="Tandai sebagai jawaban benar">
+                                                                    <input type="radio" :name="'questions['+index+'][correct_answer]'" :value="opt" x-model="q.correct_answer" class="text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer">
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                    <p class="text-[10px] text-slate-400 mt-2 italic text-right">*Pilih radio button di kanan untuk kunci jawaban.</p>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Footer Tombol --}}
+                                <div class="mt-8 pt-6 border-t border-slate-200 flex items-center gap-4">
+                                    <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200">
+                                        {{ __('Simpan Materi') }}
+                                    </x-primary-button>
+                                    <a href="{{ route('admin.courses.chapters.index', $course->id) }}" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-bold text-sm hover:bg-slate-50 transition">
+                                        Batal
+                                    </a>
+                                </div>
+
                             </div>
-
                         </form>
                     </div>
                 </div>
 
-    {{-- ==================== KOLOM KANAN (4/12): SIDEBAR ==================== --}}
-    <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
-        
-        {{-- 1. Info Konteks (Desain Baru: Minimalis & Profesional) --}}
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
-            <div class="flex gap-4 items-start">
-                {{-- Thumbnail Kursus (Lebih Kecil & Rapi) --}}
-                <div class="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
-                    <img src="{{ Storage::url($course->thumbnail) }}" class="w-full h-full object-cover" alt="Thumbnail">
-                </div>
-
-                {{-- Text Info --}}
-                <div class="flex-1 min-w-0">
-                    <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-0.5">
-                        Bab Saat Ini
-                    </p>
-                    <h3 class="text-sm font-bold text-slate-900 truncate" title="{{ $chapter->title }}">
-                        {{ $chapter->title }}
-                    </h3>
-                    
-                    {{-- Breadcrumb like info --}}
-                    <div class="flex items-center gap-1.5 mt-1 text-slate-500">
-                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        <p class="text-xs truncate max-w-[180px]" title="{{ $course->title }}">
-                            {{ $course->title }}
-                        </p>
+                {{-- SIDEBAR KANAN --}}
+                <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                        {{-- Header Sidebar --}}
+  
+                        
+                        {{-- Isi Sidebar (Tanpa Padding agar menempel) --}}
+                        <div>
+                             @include('admin.chapters.sidebar')
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        {{-- 2. Sidebar Include (Kurikulum) --}}
-        @if(view()->exists('admin.chapters.sidebar'))
-            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Struktur Bab</h3>
-                    <span class="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">{{ $course->chapters->count() }} Bab</span>
-                </div>
-                <div>
-                    @include('admin.chapters.sidebar', ['course' => $course, 'chapters' => $course->chapters])
-                </div>
-            </div>
-        @endif
-
-    </div>
 
             </div>
         </div>
@@ -197,19 +241,17 @@
     {{-- Script CKEditor --}}
     @push('scripts')
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
+    <script src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script>
-        ClassicEditor
-            .create(document.querySelector('#content'))
+        ClassicEditor.create(document.querySelector('#content'))
             .then(editor => {
                 editor.ui.view.editable.element.style.minHeight = '300px';
             })
-            .catch(error => {
-                console.error(error);
-            });
+            .catch(error => { console.error(error); });
     </script>
     <style>
-        .ck-content ul { list-style-type: disc; padding-left: 20px; }
-        .ck-content ol { list-style-type: decimal; padding-left: 20px; }
+        .ck-content ul { list-style-type: disc; padding-left: 1.5rem; }
+        .ck-content ol { list-style-type: decimal; padding-left: 1.5rem; }
     </style>
     @endpush
 </x-app-layout>
