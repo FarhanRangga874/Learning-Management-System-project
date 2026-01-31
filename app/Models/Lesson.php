@@ -17,7 +17,9 @@ class Lesson extends Model
         'content', // Ini yang akan diisi WYSIWYG
         'sort_order',
         'video_source', 
-        'file_path', // Digunakan untuk menyimpan path video atau file PDF
+        'file_path',
+        'is_preview',
+        'show_results',
     ];
 
     public function chapter()

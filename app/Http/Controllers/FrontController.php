@@ -11,6 +11,8 @@ use App\Models\LessonCompletion;
 use App\Models\Faq;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
 
 class FrontController extends Controller
 {
@@ -217,35 +219,70 @@ class FrontController extends Controller
             return back()->with('error', 'Mohon isi jawaban Anda.');
         }
 
-        foreach ($answers as $questionId => $userAnswer) {
-            $question = Question::find($questionId);
-            $isCorrect = false;
-            $score = 0;
+        // Gunakan Transaction agar atomik (semua tersimpan atau tidak sama sekali)
+        DB::transaction(function () use ($answers, $userId, $course, $lesson) {
+            
+            foreach ($answers as $questionId => $userAnswer) {
+                $question = Question::find($questionId);
+                $isCorrect = false;
+                $score = 0;
 
-            if ($question->type == 'multiple_choice') {
-                if ($userAnswer == $question->correct_answer) {
-                    $isCorrect = true;
-                    $score = $question->points;
+                if ($question && $question->type == 'multiple_choice') {
+                    if ($userAnswer == $question->correct_answer) {
+                        $isCorrect = true;
+                        $score = $question->points;
+                    }
                 }
+
+                UserAnswer::create([
+                    'user_id' => $userId,
+                    'question_id' => $questionId,
+                    'answer' => $userAnswer,
+                    'is_correct' => $isCorrect,
+                    'score' => $score
+                ]);
             }
 
-            UserAnswer::create([
+            // Tandai selesai
+            LessonCompletion::firstOrCreate([
                 'user_id' => $userId,
-                'question_id' => $questionId,
-                'answer' => $userAnswer,
-                'is_correct' => $isCorrect,
-                'score' => $score
+                'lesson_id' => $lesson->id,
+            ], [
+                'course_id' => $course->id
             ]);
-        }
-
-        LessonCompletion::firstOrCreate([
-            'user_id' => $userId,
-            'lesson_id' => $lesson->id,
-        ], [
-            'course_id' => $course->id
-        ]);
+        });
 
         return redirect()->route('front.learning', [$course->slug, $lesson->id])
             ->with('success', 'Jawaban berhasil dikirim dan ditandai selesai!');
+    }
+
+    // 8. LIHAT HASIL QUIZ
+    public function quizResults(Course $course, Lesson $lesson)
+    {
+        // 1. CEK OTORITAS ADMIN
+        // Jika admin mematikan opsi 'show_results', tolak akses siswa
+        if (!$lesson->show_results) {
+            return redirect()->route('front.learning', [$course->slug, $lesson->id])
+                ->with('error', 'Maaf, detail kunci jawaban untuk tugas ini disembunyikan oleh instruktur.');
+        }
+
+        // 2. CEK APAKAH SUDAH MENGERJAKAN
+        // Siswa hanya boleh lihat hasil KALAU sudah submit
+        $hasSubmitted = \App\Models\LessonCompletion::where('user_id', auth()->id())
+            ->where('lesson_id', $lesson->id)
+            ->exists();
+
+        if (!$hasSubmitted) {
+            return redirect()->route('front.learning', [$course->slug, $lesson->id])
+                ->with('error', 'Anda harus mengerjakan tugas ini terlebih dahulu.');
+        }
+
+        // 3. AMBIL DATA SOAL & JAWABAN USER
+        // Kita gunakan eager loading 'user_answer' agar efisien
+        $questions = $lesson->questions()->with(['user_answer' => function($q) {
+            $q->where('user_id', auth()->id());
+        }])->get();
+
+        return view('front.quiz_results', compact('course', 'lesson', 'questions'));
     }
 }

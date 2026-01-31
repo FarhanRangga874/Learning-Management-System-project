@@ -48,7 +48,7 @@ class LessonController extends Controller
             $data = $this->prepareLessonData($request, $chapter->id);
             $lesson = Lesson::create($data);
 
-            // 3. Simpan Soal dengan Kalkulasi Bobot Otomatis
+            // 3. Simpan Soal dengan Kalkulasi Bobot Otomatis & Presisi
             if ($request->type == 'assignment' && !empty($request->questions)) {
                 $this->calculateAndSaveQuestions($lesson, $request->questions);
             }
@@ -56,7 +56,7 @@ class LessonController extends Controller
             DB::commit();
 
             return redirect()->route('admin.courses.chapters.index', $chapter->course_id)
-                ->with('success', 'Materi berhasil dibuat! Nilai Pilihan Ganda dihitung otomatis.');
+                ->with('success', 'Materi berhasil dibuat! Nilai soal dihitung otomatis agar total 100.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -100,14 +100,14 @@ class LessonController extends Controller
             // Ini penting agar kalkulasi bobot ulang berjalan bersih
             $lesson->questions()->delete(); 
 
-            // 3. Simpan Soal Baru dengan Kalkulasi Bobot Otomatis
+            // 3. Simpan Soal Baru dengan Kalkulasi Bobot Otomatis & Presisi
             if ($request->type == 'assignment' && !empty($request->questions)) {
                 $this->calculateAndSaveQuestions($lesson, $request->questions);
             }
 
             DB::commit();
             return redirect()->route('admin.courses.chapters.index', $chapter->course_id)
-                ->with('success', 'Materi diperbarui! Nilai Pilihan Ganda dihitung ulang.');
+                ->with('success', 'Materi diperbarui! Nilai soal dihitung ulang agar total 100.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -146,12 +146,17 @@ class LessonController extends Controller
         // Validasi Konten berdasarkan Tipe
         if ($request->type == 'text' || $request->type == 'assignment') {
             $rules['content'] = 'required|string';
-        } elseif ($request->type == 'video' && $request->video_source == 'upload') {
-            $rules['video_file'] = 'nullable|file|mimes:mp4,mov,avi|max:102400'; 
-            // Note: nullable di sini karena saat update mungkin tidak upload baru
-            if ($request->isMethod('post')) $rules['video_file'] = 'required|file|mimes:mp4,mov,avi|max:102400';
-        } elseif ($request->type == 'video' && $request->video_source == 'youtube') {
-            $rules['video_url'] = 'required|string';
+        } elseif ($request->type == 'video') {
+            // [PERBAIKAN] Validasi deskripsi dipindah ke sini
+            $rules['video_description'] = 'nullable|string'; 
+
+            if ($request->video_source == 'upload') {
+                $rules['video_file'] = 'nullable|file|mimes:mp4,mov,avi|max:102400'; 
+                // Note: nullable di sini karena saat update mungkin tidak upload baru
+                if ($request->isMethod('post')) $rules['video_file'] = 'required|file|mimes:mp4,mov,avi|max:102400';
+            } elseif ($request->video_source == 'youtube') {
+                $rules['video_url'] = 'required|string';
+            }
         } elseif ($request->type == 'pdf') {
             $rules['pdf_file'] = 'nullable|file|mimes:pdf|max:20480';
             if ($request->isMethod('post')) $rules['pdf_file'] = 'required|file|mimes:pdf|max:20480';
@@ -176,6 +181,7 @@ class LessonController extends Controller
             'slug' => Str::slug($request->title) . '-' . Str::random(5),
             'type' => $request->type,
             'is_preview' => $request->has('is_preview'),
+            'show_results' => $request->has('show_results'),
         ];
 
         // Hanya set chapter_id jika ini create (lesson null)
@@ -196,7 +202,8 @@ class LessonController extends Controller
             }
 
         } elseif ($request->type == 'video') {
-            $data['content'] = ''; 
+            // [PERBAIKAN] Langsung simpan data, tidak perlu mendefinisikan $rules di sini
+            $data['content'] = $request->video_description ?? null;
             $data['video_source'] = $request->video_source;
             
             if ($request->video_source == 'upload' && $request->hasFile('video_file')) {
@@ -226,7 +233,8 @@ class LessonController extends Controller
     }
 
     /**
-     * LOGIKA HITUNG BOBOT OTOMATIS & SIMPAN SOAL
+     * IMPROVISASI LOGIKA PEMBAGIAN NILAI (PG Only / Campuran)
+     * Memastikan total selalu 100 walaupun jumlah soal ganjil.
      */
     private function calculateAndSaveQuestions($lesson, $questionsData)
     {
@@ -234,7 +242,7 @@ class LessonController extends Controller
         $totalEssayPoints = 0;
         $pgCount = 0;
 
-        // 1. Analisis Data Soal (Hitung total bobot Essay & Jumlah PG)
+        // 1. Hitung total poin Essay & Jumlah soal PG
         foreach ($questionsData as $q) {
             if (empty($q['text'])) continue;
             
@@ -247,15 +255,24 @@ class LessonController extends Controller
             }
         }
 
-        // 2. Kalkulasi Bobot Per Soal Pilihan Ganda
-        // Sisa nilai = 100 - Total Essay
+        // 2. Hitung Sisa Nilai untuk PG
+        // Jika HANYA PG: $totalEssayPoints = 0, jadi $remainingScore = 100
+        // Jika CAMPURAN: 100 - Total Essay
         $remainingScore = max(0, $maxScore - $totalEssayPoints);
         
-        // Bobot per soal PG = Sisa Nilai / Jumlah PG
-        // Menggunakan floor agar nilai bulat integer
-        $pgScorePerQuestion = ($pgCount > 0) ? floor($remainingScore / $pgCount) : 0; 
+        // 3. Logika Pembagian Sisa Bagi (Modulo Distribution)
+        // Agar total pas 100 jika pembagian menghasilkan desimal (misal 100 / 3)
+        // Contoh: 100 poin / 3 soal. 
+        // Base = 33. Sisa = 1.
+        // Distribusi: 34, 33, 33. Total = 100.
+        
+        $basePgScore = ($pgCount > 0) ? floor($remainingScore / $pgCount) : 0;
+        $remainder = ($pgCount > 0) ? ($remainingScore % $pgCount) : 0;
 
-        // 3. Simpan ke Database
+        // Counter untuk mendistribusikan sisa nilai ke soal-soal awal
+        $distributedCount = 0;
+
+        // 4. Simpan ke Database
         foreach ($questionsData as $qData) {
             if (empty($qData['text'])) continue;
 
@@ -267,8 +284,12 @@ class LessonController extends Controller
 
             // --- APLIKASI NILAI ---
             if ($qData['type'] == 'multiple_choice') {
-                // Jika PG, gunakan nilai hasil kalkulasi otomatis
-                $question->points = $pgScorePerQuestion; 
+                // Tambahkan 1 poin ekstra ke sejumlah soal sebanyak sisa bagi ($remainder)
+                $extraPoint = ($distributedCount < $remainder) ? 1 : 0;
+                
+                $question->points = $basePgScore + $extraPoint;
+                
+                $distributedCount++; // Tandai bahwa 1 soal PG sudah diproses
             } else {
                 // Jika Essay, gunakan nilai input manual admin
                 $question->points = intval($qData['points'] ?? 0); 

@@ -38,8 +38,10 @@ Route::middleware(['auth'])->group(function () {
     
     // Kuis & Penyelesaian Materi
     Route::get('/course/{course:slug}/lesson/{lesson}/quiz', [FrontController::class, 'startQuiz'])->name('front.quiz');
+    Route::get('/course/{course:slug}/lesson/{lesson}/results', [FrontController::class, 'quizResults'])->name('front.quiz.results');
     Route::post('/course/{course:slug}/lesson/{lesson}/submit', [FrontController::class, 'submitQuiz'])->name('front.quiz.submit');
     Route::post('/course/{course:slug}/lesson/{lesson}/complete', [FrontController::class, 'markAsComplete'])->name('front.lesson.complete');
+    
     
     // Sertifikat
     Route::post('/course/{course}/certificate', [CertificateController::class, 'request'])->name('front.certificate.request');
