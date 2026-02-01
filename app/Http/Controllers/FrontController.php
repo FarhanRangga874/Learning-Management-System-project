@@ -55,7 +55,7 @@ class FrontController extends Controller
 
         // --- PENTING: PAGINATION DIUBAH KE 12 ---
         // Angka 12 cocok untuk grid 3 kolom (3x4) maupun 4 kolom (4x3)
-        $courses = $coursesQuery->paginate(12);
+        $courses = $coursesQuery->paginate(12)->withQueryString();
 
         return view('front.index', compact('courses', 'categories', 'faqs'));
     }

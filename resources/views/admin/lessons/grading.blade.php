@@ -25,7 +25,7 @@
                         
                         {{-- Header Sidebar (Judul) --}}
                         <div class="hidden lg:flex items-center justify-between mb-2 h-8">
-                            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Informasi Siswa</h3>
+                            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Informasi Pengguna</h3>
                         </div>
 
                         {{-- Card 1: Profil Siswa & Skor --}}
@@ -111,37 +111,70 @@
                                 <div class="p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
                                     
                                     {{-- Kolom Jawaban (Kiri) --}}
-                                    <div class="md:col-span-8 space-y-2">
+                                    <div class="md:col-span-8 space-y-4">
                                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                            Jawaban Siswa
+                                            Detail Jawaban
                                         </p>
                                         
                                         @if($ans->question->type == 'multiple_choice')
-                                            <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                                <div class="w-10 h-10 flex items-center justify-center rounded-lg text-lg font-mono font-bold border-2 shrink-0 {{ $ans->answer == $ans->question->correct_answer ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700' }}">
-                                                    {{ $ans->answer }}
-                                                </div>
-                                                <div>
-                                                    @if($ans->answer == $ans->question->correct_answer)
-                                                        <span class="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md border border-green-100">
-                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                                                            Benar
-                                                        </span>
-                                                    @else
-                                                        <div class="flex flex-col gap-1">
-                                                            <span class="inline-flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-md border border-red-100 w-fit">
-                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                                Salah
-                                                            </span>
-                                                            <span class="text-xs text-slate-500 mt-0.5">
-                                                                Kunci: <strong class="text-green-600 font-mono">{{ $ans->question->correct_answer }}</strong>
-                                                            </span>
+                                            
+                                            {{-- [BARU] Menampilkan Semua Opsi A/B/C/D --}}
+                                            <div class="space-y-2">
+                                                @foreach(['A', 'B', 'C', 'D'] as $opt)
+                                                    @php
+                                                        $optionText = $ans->question->options[$opt] ?? '';
+                                                        $isUserAnswer = ($ans->answer == $opt);
+                                                        $isCorrectKey = ($ans->question->correct_answer == $opt);
+
+                                                        // Logic Styling
+                                                        $bgClass = 'bg-white border-slate-100';
+                                                        $textClass = 'text-slate-500';
+                                                        $badgeClass = 'bg-slate-100 text-slate-500';
+
+                                                        if ($isUserAnswer && $isCorrectKey) {
+                                                            // User Benar
+                                                            $bgClass = 'bg-green-50 border-green-200';
+                                                            $textClass = 'text-green-800 font-bold';
+                                                            $badgeClass = 'bg-green-200 text-green-800';
+                                                        } elseif ($isUserAnswer && !$isCorrectKey) {
+                                                            // User Salah
+                                                            $bgClass = 'bg-red-50 border-red-200';
+                                                            $textClass = 'text-red-800 font-bold';
+                                                            $badgeClass = 'bg-red-200 text-red-800';
+                                                        } elseif (!$isUserAnswer && $isCorrectKey) {
+                                                            // Kunci Jawaban (Yg dilewatkan user)
+                                                            $bgClass = 'bg-slate-50 border-green-200 border-dashed';
+                                                            $textClass = 'text-green-600 font-medium';
+                                                            $badgeClass = 'bg-green-100 text-green-600';
+                                                        }
+                                                    @endphp
+
+                                                    <div class="flex items-start gap-3 p-3 rounded-lg border {{ $bgClass }} transition-colors">
+                                                        <div class="w-6 h-6 flex items-center justify-center rounded text-xs font-bold shrink-0 {{ $badgeClass }}">
+                                                            {{ $opt }}
                                                         </div>
-                                                    @endif
-                                                </div>
+                                                        <div class="text-sm {{ $textClass }} pt-0.5">
+                                                            {{ $optionText }}
+                                                            
+                                                            {{-- Label Penjelas --}}
+                                                            @if($isUserAnswer)
+                                                                <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded {{ $isCorrectKey ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' }}">
+                                                                    Jawaban Pengguna
+                                                                </span>
+                                                            @endif
+                                                            @if($isCorrectKey && !$isUserAnswer)
+                                                                <span class="ml-2 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-600">
+                                                                    Kunci Benar
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
                                             </div>
+
                                         @else
+                                            {{-- Essay: Tetap sama, tampilkan teks --}}
                                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 text-sm leading-relaxed whitespace-pre-line min-h-[80px]">
                                                 {{ $ans->answer ?: '(Tidak ada jawaban)' }}
                                             </div>

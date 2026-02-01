@@ -91,7 +91,7 @@
                                 <div class="bg-slate-50 border border-slate-100 rounded-xl p-5 mb-6">
                                     
                                     {{-- Video Input --}}
-                                    <div x-show="type === 'video'" x-transition class="mb-6">
+                                    <div x-show="type === 'video'" x-transition>
                                         <div class="flex gap-4 mb-4">
                                             <label class="inline-flex items-center cursor-pointer">
                                                 <input type="radio" x-model="videoSource" name="video_source" value="upload" class="text-indigo-600 focus:ring-indigo-500">
@@ -111,36 +111,37 @@
                                         <div x-show="videoSource === 'youtube'">
                                             <x-text-input class="block w-full" type="text" name="video_url" placeholder="https://youtube.com/watch?v=..." />
                                         </div>
+
+                                        {{-- [FIX] Menambahkan Kolom Deskripsi Video Disini --}}
+                                        <div class="mt-4">
+                                            <x-input-label for="video_description" :value="__('Deskripsi Video (Opsional)')" />
+                                            <textarea id="video_description" name="video_description" rows="4"
+                                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                                placeholder="Tuliskan ringkasan atau catatan penting tentang video ini...">{{ old('video_description') }}</textarea>
+                                        </div>
                                     </div>
 
                                     {{-- PDF Input --}}
-                                    <div x-show="type === 'pdf'" x-transition style="display: none;" class="mb-6">
+                                    <div x-show="type === 'pdf'" x-transition style="display: none;">
                                         <label class="block text-sm font-bold text-slate-700 mb-2">Upload File PDF</label>
                                         <input type="file" name="pdf_file" accept="application/pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white file:text-red-700 hover:file:bg-red-50 file:border-slate-200 transition cursor-pointer">
                                     </div>
 
-                                    {{-- Deskripsi / Konten --}}
-                                    <div x-show="['text', 'assignment', 'video'].includes(type)" x-transition>
+                                    {{-- Text / Assignment Content --}}
+                                    <div x-show="type === 'text' || type === 'assignment'" x-transition style="display: none;">
                                         <div x-show="type === 'assignment'" class="mb-3 p-3 bg-purple-50 text-purple-800 rounded-lg text-sm border border-purple-100 flex items-start gap-2">
                                             <svg class="w-5 h-5 text-purple-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                             <div>
                                                 <strong>Instruksi Tugas:</strong> Jelaskan detail tugas di sini. Anda dapat menambahkan soal kuis di bagian bawah.
                                             </div>
                                         </div>
-
-                                        <label class="block text-sm font-bold text-slate-700 mb-2">
-                                            <span x-show="type === 'video'">Deskripsi Video</span>
-                                            <span x-show="type === 'text'">Isi Artikel</span>
-                                            <span x-show="type === 'assignment'">Deskripsi Tugas</span>
-                                        </label>
-
+                                        <label class="block text-sm font-bold text-slate-700 mb-2" x-text="type === 'assignment' ? 'Deskripsi Tugas' : 'Isi Artikel'"></label>
                                         <textarea id="content" name="content" class="block w-full border-gray-300 rounded-md shadow-sm h-40"></textarea>
-                                        <x-input-error :messages="$errors->get('content')" class="mt-2" />
                                     </div>
 
                                 </div>
 
-                                {{-- 4. Builder Soal (Assignment Only) --}}
+                                {{-- 4. Builder Soal (Assignment) --}}
                                 <div x-show="type === 'assignment'" class="bg-white border border-purple-200 rounded-xl shadow-sm overflow-hidden mb-6" x-transition>
                                     
                                     {{-- Header Builder --}}
@@ -167,7 +168,6 @@
 
                                         {{-- Daftar Soal --}}
                                         <div class="space-y-6">
-                                            {{-- Empty State --}}
                                             <template x-if="questions.length === 0">
                                                 <div class="text-center py-8 border-2 border-dashed border-slate-200 rounded-xl">
                                                     <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
@@ -175,12 +175,10 @@
                                                 </div>
                                             </template>
                                             
-                                            {{-- Container ID untuk Scroll --}}
                                             <div id="questions-container" class="space-y-6">
                                                 <template x-for="(q, index) in questions" :key="index">
                                                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 relative transition hover:border-purple-200 hover:shadow-sm">
                                                         
-                                                        {{-- Header Per Soal --}}
                                                         <div class="flex justify-between items-center mb-4">
                                                             <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-md border border-purple-200" x-text="'Soal #' + (index+1)"></span>
                                                             <button type="button" @click="questions.splice(index, 1)" class="text-red-500 hover:text-red-700 font-bold text-xs flex items-center gap-1 transition">
@@ -205,12 +203,10 @@
                                                             
                                                             <div class="w-1/2">
                                                                 <label class="block text-xs font-bold text-slate-500 mb-1">Bobot Poin</label>
-                                                                
                                                                 <div x-show="q.type === 'essay'">
                                                                     <input type="number" :name="'questions['+index+'][points]'" x-model="q.points" class="w-full text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-center font-bold text-purple-700" placeholder="Contoh: 20">
                                                                     <p class="text-[10px] text-slate-400 mt-1">*Wajib isi untuk Essay</p>
                                                                 </div>
-
                                                                 <div x-show="q.type === 'multiple_choice'">
                                                                     <div class="w-full h-[38px] bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-xs font-bold italic cursor-not-allowed select-none">
                                                                         Auto Calculated
@@ -220,7 +216,6 @@
                                                             </div>
                                                         </div>
 
-                                                        {{-- Area Pilihan Ganda --}}
                                                         <div x-show="q.type === 'multiple_choice'" class="bg-white p-4 rounded-lg border border-slate-200">
                                                             <label class="block text-xs font-bold text-slate-500 mb-3">Opsi Jawaban & Kunci</label>
                                                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -241,7 +236,6 @@
                                                 </template>
                                             </div>
 
-                                            {{-- TOMBOL TAMBAH SOAL (POSISI BARU: DI BAWAH) --}}
                                             <button type="button" @click="addQuestion()" 
                                                 class="w-full py-4 rounded-xl border-2 border-dashed border-purple-200 text-purple-600 font-bold hover:bg-purple-50 hover:border-purple-300 transition flex flex-col items-center justify-center gap-2 group">
                                                 <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -249,7 +243,6 @@
                                                 </div>
                                                 <span>Tambah Soal Baru</span>
                                             </button>
-
                                         </div>
                                     </div>
                                 </div>

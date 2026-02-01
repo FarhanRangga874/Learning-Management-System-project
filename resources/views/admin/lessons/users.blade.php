@@ -1,11 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            {{-- UPDATE HREF DI SINI --}}
-            {{-- Menggunakan $lesson->chapter->course_id untuk kembali ke daftar tugas kursus tersebut --}}
             <a href="{{ route('admin.courses.assignments', $lesson->chapter->course_id) }}" class="group flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">
                 <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:border-indigo-200 group-hover:bg-indigo-50 transition-all">
-                    {{-- Icon Panah Kiri --}}
                     <svg class="w-4 h-4 text-slate-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </div>
                 <span>Kembali ke Daftar Tugas</span>
@@ -24,13 +21,24 @@
                         <p class="text-slate-500 text-sm mt-1">Materi: <strong>{{ $lesson->title }}</strong></p>
                     </div>
                     
-                    {{-- Filter Sederhana (Contoh UI) --}}
+                    {{-- [FIX] Filter Dropdown Berfungsi --}}
                     <div class="flex items-center gap-2">
-                        <select class="text-sm border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm">
-                            <option value="">Semua Status</option>
-                            <option value="pending">Perlu Koreksi</option>
-                            <option value="graded">Selesai Dinilai</option>
-                        </select>
+                        <form method="GET" action="{{ route('admin.lessons.users.index', $lesson->id) }}">
+                            <div class="flex items-center gap-2">
+                                <select name="status" onchange="this.form.submit()" class="text-sm border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm cursor-pointer min-w-[150px]">
+                                    <option value="">Semua Status</option>
+                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Perlu Koreksi</option>
+                                    <option value="graded" {{ request('status') == 'graded' ? 'selected' : '' }}>Sudah Dinilai</option>
+                                </select>
+
+                                {{-- Tombol Reset (Hanya muncul jika sedang filter) --}}
+                                @if(request('status'))
+                                    <a href="{{ route('admin.lessons.users.index', $lesson->id) }}" class="p-2 bg-white border border-slate-300 rounded-lg text-slate-500 hover:text-red-600 hover:border-red-300 transition" title="Reset Filter">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
                     </div>
                 </div>
 
@@ -49,8 +57,8 @@
 
                     {{-- Perlu Koreksi --}}
                     @php
-                        // Hitung manual dari collection saat ini (untuk contoh tampilan)
-                        $pendingCount = $users->where('grading_status', '!=', 'Sudah Dinilai')->count(); 
+                        // Hitung jumlah pending (bisa dari query controller untuk akurasi, tapi ini visual saja)
+                        $pendingCount = $users->where('grading_status', 'Perlu Koreksi')->count(); 
                     @endphp
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
                         <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
@@ -162,8 +170,8 @@
                         <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                         </div>
-                        <h3 class="text-slate-900 font-bold text-lg">Belum Ada Pengumpulan</h3>
-                        <p class="text-slate-500 text-sm mt-1">Belum ada siswa yang mengerjakan tugas ini.</p>
+                        <h3 class="text-slate-900 font-bold text-lg">Tidak ada data ditemukan</h3>
+                        <p class="text-slate-500 text-sm mt-1">Belum ada siswa dengan status ini atau belum ada yang mengumpulkan.</p>
                     </div>
                 @endif
             </div>

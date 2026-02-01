@@ -14,34 +14,59 @@ class UserProgressController extends Controller
     /**
      * Tampilkan daftar siswa yang sudah mengerjakan tugas ini.
      */
-    public function index(Lesson $lesson)
+    public function index(Request $request, Lesson $lesson)
     {
-        // 1. Ambil user yang memiliki jawaban pada lesson ini
-        $users = User::whereHas('answers', function($query) use ($lesson) {
+        // 1. Cek apakah di lesson ini ada soal Essay?
+        $hasEssayQuestion = $lesson->questions()->where('type', 'essay')->exists();
+
+        // 2. Query Dasar
+        $query = User::whereHas('answers', function($query) use ($lesson) {
             $query->whereHas('question', function($q) use ($lesson) {
                 $q->where('lesson_id', $lesson->id);
             });
-        })->with(['answers' => function($query) use ($lesson) {
-             // Load jawaban beserta detail pertanyaannya (penting untuk cek tipe soal)
-             $query->whereHas('question', function($q) use ($lesson) {
+        });
+
+        // 3. LOGIC FILTER STATUS (Ini yang membuat dropdown berfungsi)
+        if ($request->status == 'pending') {
+            // Cari user yang punya jawaban essay yang belum diupdate (created_at == updated_at)
+            $query->whereHas('answers', function($q) use ($lesson) {
+                $q->whereHas('question', function($subQ) use ($lesson) {
+                    $subQ->where('lesson_id', $lesson->id)->where('type', 'essay');
+                })->whereColumn('created_at', 'updated_at');
+            });
+        } elseif ($request->status == 'graded') {
+            // Cari user yang TIDAK punya jawaban essay pending
+            $query->whereDoesntHave('answers', function($q) use ($lesson) {
+                $q->whereHas('question', function($subQ) use ($lesson) {
+                    $subQ->where('lesson_id', $lesson->id)->where('type', 'essay');
+                })->whereColumn('created_at', 'updated_at');
+            });
+        }
+
+        // 4. Ambil data dengan relasi
+        $users = $query->with(['answers' => function($query) use ($lesson) {
+            $query->whereHas('question', function($q) use ($lesson) {
                 $q->where('lesson_id', $lesson->id);
             })->with('question'); 
         }])->paginate(10);
 
-        // 2. Loop setiap user untuk hitung skor & tentukan status
+        // 5. Loop untuk label status (sama seperti sebelumnya)
         foreach ($users as $user) {
             $user->total_score = $user->answers->sum('score');
             
-            // --- LOGIKA STATUS BARU ---
-            // Cek apakah ada soal ESSAY yang nilainya masih 0 (Asumsi 0 = belum dinilai)
-            // Kita gunakan collection method 'contains'
-            $hasUngradedEssay = $user->answers->contains(function ($ans) {
-                return $ans->question->type === 'essay' && $ans->score === 0;
-            });
+            if (!$hasEssayQuestion) {
+                $user->grading_status = 'Sudah Dinilai';
+            } else {
+                $needsGrading = $user->answers->contains(function ($ans) {
+                    return $ans->question->type === 'essay' && $ans->updated_at->eq($ans->created_at);
+                });
 
-            // Jika ada essay bernilai 0 -> Perlu Koreksi.
-            // Jika tidak ada essay 0 (atau hanya ada PG) -> Selesai.
-            $user->grading_status = $hasUngradedEssay ? 'Perlu Koreksi' : 'Selesai';
+                if ($needsGrading) {
+                    $user->grading_status = 'Perlu Koreksi';
+                } else {
+                    $user->grading_status = 'Sudah Dinilai';
+                }
+            }
         }
 
         return view('admin.lessons.users', compact('lesson', 'users'));
@@ -63,11 +88,10 @@ class UserProgressController extends Controller
     }
 
     /**
-     * UPDATE MASSAL: Auto-Grade PG & Manual Grade Essay
+     * UPDATE MASSAL: Simpan semua nilai sekaligus.
      */
     public function updateAllScores(Request $request, Lesson $lesson, User $user)
     {
-        // Validasi: scores boleh null/kosong jika soalnya hanya Pilihan Ganda (karena PG tidak kirim input)
         $request->validate([
             'scores' => 'nullable|array', 
             'scores.*' => 'integer|min:0',
@@ -76,8 +100,6 @@ class UserProgressController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Ambil semua jawaban user untuk lesson ini dari Database
-            // Kita loop berdasarkan data DB, bukan data Request, agar PG tetap ternilai meski tidak ada di request
             $userAnswers = UserAnswer::with('question')
                 ->where('user_id', $user->id)
                 ->whereHas('question', function($q) use ($lesson) {
@@ -86,48 +108,48 @@ class UserProgressController extends Controller
 
             foreach ($userAnswers as $ans) {
                 $score = 0;
+                $isCorrect = false;
 
-                // --- LOGIKA AUTO-GRADING ---
-                
                 if ($ans->question->type == 'multiple_choice') {
-                    // A. PILIHAN GANDA: Nilai Otomatis by System
-                    // Cek apakah jawaban user SAMA PERSIS dengan kunci jawaban
+                    // Auto-grade PG (Safety check, biar nilai gak ketimpa)
                     if ($ans->answer === $ans->question->correct_answer) {
-                        $score = $ans->question->points; // Dapat Poin Penuh
-                    } else {
-                        $score = 0; // Salah
+                        $score = $ans->question->points;
+                        $isCorrect = true;
                     }
-                } 
-                else {
-                    // B. ESSAY: Nilai Manual dari Input Admin
-                    // Ambil nilai dari input request berdasarkan ID jawaban
-                    // Jika tidak ada di request (misal admin lupa isi), pakai nilai lama ($ans->score)
+                } else {
+                    // Manual grade Essay
                     $inputScore = $request->scores[$ans->id] ?? $ans->score;
-                    
-                    // Pastikan nilai tidak melebihi poin maksimal soal
-                    $score = min($inputScore, $ans->question->points); 
+                    $score = min($inputScore, $ans->question->points); // Cegah nilai lebih dari bobot
+                    $isCorrect = $score > 0;
                 }
 
-                // 2. Update ke Database
-                $ans->update([
-                    'score' => $score,
-                    'is_correct' => $score > 0 // Anggap benar jika dapat nilai > 0
-                ]);
+                // Assign nilai baru
+                $ans->score = $score;
+                $ans->is_correct = $isCorrect;
+                
+                // [PENTING] Update timestamp 'updated_at'
+                // Ini kuncinya: Walaupun nilai tidak berubah (misal tetap 0),
+                // kita paksa update waktu agar status berubah jadi 'Sudah Dinilai'.
+                if ($ans->isDirty()) {
+                    $ans->save();
+                } else {
+                    $ans->touch(); // Paksa update timestamp jika data tidak berubah
+                }
             }
 
             DB::commit();
 
             return redirect()->route('admin.lessons.users.index', $lesson->id)
-                ->with('success', 'Penilaian berhasil disimpan! (Pilihan Ganda dinilai otomatis)');
+                ->with('success', 'Penilaian disimpan. Status siswa diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
     /**
-     * Update skor satuan (Opsional, jika masih dibutuhkan untuk ajax/manual satu per satu)
+     * Update skor satuan (Optional)
      */
     public function updateScore(Request $request, UserAnswer $userAnswer)
     {
@@ -135,11 +157,15 @@ class UserProgressController extends Controller
             'score' => 'required|integer|min:0|max:' . $userAnswer->question->points,
         ]);
 
-        $userAnswer->update([
-            'score' => $request->score,
-            'is_correct' => $request->score > 0 
-        ]);
+        $userAnswer->score = $request->score;
+        $userAnswer->is_correct = $request->score > 0;
+        
+        if ($userAnswer->isDirty()) {
+            $userAnswer->save();
+        } else {
+            $userAnswer->touch();
+        }
 
-        return back()->with('success', 'Nilai berhasil diperbarui!');
+        return back()->with('success', 'Nilai diperbarui.');
     }
 }

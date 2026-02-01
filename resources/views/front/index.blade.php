@@ -76,7 +76,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             {{-- Header Katalog & Filter --}}
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4 relative z-20"> {{-- Tambahkan relative z-20 agar di atas card --}}
                 <h2 class="text-xl md:text-2xl font-bold text-slate-900 hidden lg:block">
                     @if(request('search')) Hasil: "{{ request('search') }}"
                     @elseif(request('category')) Kategori: {{ $categories->find(request('category'))->name ?? 'Terpilih' }}
@@ -104,8 +104,8 @@
                         </a>
                     </div>
 
-                    {{-- Filter Kategori --}}
-                    <div class="relative w-full sm:w-64 z-20" x-data="{ open: false }">
+                    {{-- Filter Kategori (Dropdown Fix) --}}
+                    <div class="relative w-full sm:w-64" x-data="{ open: false }">
                         <button @click="open = !open" @click.away="open = false" 
                             class="flex items-center justify-between w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all">
                             <span class="text-sm font-medium text-slate-700 truncate">
@@ -118,14 +118,19 @@
                             <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
 
+                        {{-- Dropdown Menu (Z-INDEX 50 agar paling atas) --}}
                         <div x-show="open" 
                              x-transition:enter="transition ease-out duration-100"
                              x-transition:enter-start="transform opacity-0 scale-95"
                              x-transition:enter-end="transform opacity-100 scale-100"
-                             class="absolute right-0 mt-2 w-full bg-white rounded-xl shadow-xl border border-slate-100 py-1 overflow-hidden origin-top-right" 
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-full bg-white rounded-xl shadow-2xl border border-slate-100 py-1 overflow-hidden origin-top-right z-50 max-h-60 overflow-y-auto custom-scrollbar" 
                              style="display: none;">
+                            
                             <a href="{{ route('front.index', array_merge(request()->except(['page', 'category']), ['category' => null])) }}" 
-                               class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors {{ !request('category') ? 'bg-indigo-50 text-indigo-600 font-semibold' : '' }}">
+                               class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 {{ !request('category') ? 'bg-indigo-50 text-indigo-600 font-semibold' : '' }}">
                                 Semua Kategori
                             </a>
                             @foreach($categories as $category)
@@ -139,54 +144,66 @@
                 </div>
             </div>
 
-            {{-- COURSE GRID (MINIMALIST & CLICKABLE) --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+{{-- COURSE GRID (Redesigned) --}}
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 @forelse($courses as $course)
                 
-                {{-- CARD UTAMA --}}
-                <div class="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full overflow-hidden ring-1 ring-slate-900/5">
+                <div class="group flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                     
-                    {{-- 1. Image Section & Badges --}}
-                    <div class="relative h-44 overflow-hidden bg-slate-100">
-                        <img src="{{ Storage::url($course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                    {{-- 1. Image & Overlay --}}
+                    <div class="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                        <img src="{{ Storage::url($course->thumbnail) }}" alt="{{ $course->title }}" 
+                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        
+                        {{-- Gradient Overlay --}}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300"></div>
 
-                        {{-- Badge Kategori --}}
-                        <span class="absolute top-3 left-3 bg-white/95 backdrop-blur text-indigo-600 text-[10px] font-bold px-2.5 py-1 rounded-md shadow-sm border border-indigo-50 uppercase tracking-wider z-20">
+                        {{-- Category Badge (Top Left) --}}
+                        <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm border border-indigo-50 uppercase tracking-wider z-10">
                             {{ $course->category->name }}
                         </span>
 
-                        {{-- Badge Akses --}}
+                        {{-- Access Badge (Top Right) --}}
                         @if($course->access_type == 'open')
-                            <span class="absolute top-3 right-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-20">
+                            <span class="absolute top-3 right-3 bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm z-10">
                                 GRATIS
                             </span>
                         @else
-                            <span class="absolute top-3 right-3 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-20">
+                            <span class="absolute top-3 right-3 bg-slate-800/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10">
                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                                 PRIVATE
                             </span>
                         @endif
                     </div>
 
-                    {{-- 2. Body Content --}}
-                    <div class="p-5 flex-1 flex flex-col">
-                        {{-- Title with Stretched Link (Makes entire card clickable) --}}
-                        <h3 class="text-base font-bold text-slate-900 leading-snug mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2">
-                            <a href="{{ route('front.details', $course->slug) }}" class="focus:outline-none before:absolute before:inset-0 before:z-10">
+                    {{-- 2. Content --}}
+                    <div class="p-4 flex flex-col flex-1">
+                        <h3 class="font-bold text-slate-900 text-sm md:text-base leading-snug line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">
+                            <a href="{{ route('front.details', $course->slug) }}" class="focus:outline-none">
+                                <span class="absolute inset-0 z-0"></span>
                                 {{ $course->title }}
                             </a>
                         </h3>
                         
-                        {{-- Description --}}
-                        <p class="text-slate-500 text-xs leading-relaxed line-clamp-2 mb-0">
-                            {{ Str::limit(strip_tags($course->description), 80) }}
+                        <p class="text-xs text-slate-500 line-clamp-2 mb-4 leading-relaxed">
+                            {{ Str::limit(strip_tags($course->description), 70) }}
                         </p>
+
+                        {{-- Footer Card (Author/Stats - Opsional, bisa dihapus jika tidak ada data) --}}
+                        <div class="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                            <span class="flex items-center gap-1">
+                                <svg class="w-3 h-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                Materi Lengkap
+                            </span>
+                            <span class="group-hover:text-indigo-500 transition-colors flex items-center gap-1">
+                                Lihat Detail &rarr;
+                            </span>
+                        </div>
                     </div>
                 </div>
-                {{-- END CARD --}}
                 
                 @empty
+                {{-- Empty State (Tidak Berubah) --}}
                 <div class="col-span-full py-16 text-center">
                     <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-50 mb-6">
                         <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -200,15 +217,16 @@
                 @endforelse
             </div>
 
-            {{-- PAGINATION --}}
-            <div class="mt-12">
-                {{ $courses->links() }}
+            {{-- PAGINATION (Redesigned) --}}
+            <div class="mt-12 flex justify-center">
+                {{ $courses->onEachSide(1)->links() }}
             </div>
+            {{-- Jika belum publish vendor pagination: php artisan vendor:publish --tag=laravel-pagination --}}
 
         </div>
     </div>
 
-    {{-- 3. FAQ SECTION (Tetap sama) --}}
+    {{-- 3. FAQ SECTION --}}
     <div class="py-24 bg-white relative overflow-hidden border-t border-slate-100">
         <div class="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

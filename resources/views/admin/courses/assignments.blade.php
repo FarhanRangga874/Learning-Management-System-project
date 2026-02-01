@@ -36,6 +36,19 @@
             @if($assignments->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($assignments as $assignment)
+                        
+                        {{-- Logic Hitung "Perlu Koreksi" --}}
+                        @php
+                            // Ambil semua jawaban user untuk lesson ini
+                            // Filter user yang punya jawaban essay yang belum diupdate (created_at == updated_at)
+                            $pendingCount = \App\Models\User::whereHas('answers', function($q) use ($assignment) {
+                                $q->whereHas('question', function($subQ) use ($assignment) {
+                                    $subQ->where('lesson_id', $assignment->id)
+                                         ->where('type', 'essay');
+                                })->whereColumn('created_at', 'updated_at');
+                            })->count();
+                        @endphp
+
                         <div class="group bg-white border border-slate-200 rounded-xl p-5 hover:shadow-lg hover:border-indigo-200 transition duration-300 relative overflow-hidden flex flex-col h-full">
                             
                             {{-- Decorative Blob --}}
@@ -67,9 +80,20 @@
 
                                 {{-- Footer Card --}}
                                 <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
-                                    <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                                        <span>Peserta</span>
+                                    
+                                    {{-- Indikator Status Koreksi --}}
+                                    <div class="flex items-center gap-2">
+                                        @if($pendingCount > 0)
+                                            <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-lg border border-red-100 animate-pulse">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                                {{ $pendingCount }} Perlu Koreksi
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 text-xs text-slate-400 font-medium">
+                                                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                Semua Dinilai
+                                            </span>
+                                        @endif
                                     </div>
 
                                     <a href="{{ route('admin.lessons.users.index', $assignment->id) }}" class="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-indigo-700 hover:shadow-md transition shadow-sm group-hover:translate-x-1">
