@@ -6,38 +6,23 @@
             {{-- 1. BREADCRUMBS NAVIGATION --}}
             <nav class="flex mb-4" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                    
-                    {{-- Level 1: Home --}}
                     <li class="inline-flex items-center">
                         <a href="{{ route('front.index') }}" class="text-xs font-medium text-gray-500 hover:text-indigo-600 transition-colors">
                             Home
                         </a>
                     </li>
-
-                    {{-- Separator --}}
-                    <li>
-                        <span class="text-gray-300 text-xs">/</span>
-                    </li>
-
-                    {{-- Level 2: Kategori --}}
+                    <li><span class="text-gray-300 text-xs">/</span></li>
                     <li>
                         <a href="{{ route('front.index', ['category' => $course->category->id]) }}" class="text-xs font-medium text-gray-500 hover:text-indigo-600 transition-colors">
                             {{ $course->category->name }}
                         </a>
                     </li>
-
-                    {{-- Separator --}}
-                    <li>
-                        <span class="text-gray-300 text-xs">/</span>
-                    </li>
-
-                    {{-- Level 3: Judul Course (Active) --}}
+                    <li><span class="text-gray-300 text-xs">/</span></li>
                     <li aria-current="page">
                         <span class="text-xs font-semibold text-gray-900 truncate max-w-[200px] sm:max-w-xs block">
                             {{ $course->title }}
                         </span>
                     </li>
-
                 </ol>
             </nav>
 
@@ -66,12 +51,11 @@
                         </div>
                     </div>
 
-                    {{-- Deskripsi --}}
+                    {{-- Deskripsi [FIX WYSIWYG] --}}
                     <div class="prose prose-lg prose-indigo max-w-none text-gray-600 leading-relaxed mb-10">
                         <h3 class="text-2xl font-bold text-gray-900 mb-4">Tentang Kursus</h3>
-                        <p>
-                            {{ $course->description ?? 'Deskripsi belum tersedia.' }}
-                        </p>
+                        {{-- Menggunakan {!! !!} agar HTML dirender --}}
+                        {!! $course->description ?? 'Deskripsi belum tersedia.' !!}
                     </div>
 
                     {{-- Keypoints --}}
@@ -174,7 +158,7 @@
                                         </div>
                                         <span class="text-gray-600 font-medium text-sm">Total Materi</span>
                                     </div>
-                                    <span class="font-bold text-gray-900">{{ $course->chapters->count() }} Bab</span>
+                                    <span class="font-bold text-gray-900">{{ $course->chapters->sum(function($c){ return $c->lessons->count(); }) }} Materi</span>
                                 </li>
                                 <li class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
