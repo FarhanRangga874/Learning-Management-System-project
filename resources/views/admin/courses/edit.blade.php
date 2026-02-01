@@ -316,3 +316,4 @@
     </style>
     @endpush
 </x-app-layout>
+@include('layouts.footer') 

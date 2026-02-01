@@ -301,3 +301,4 @@
     <script src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     @endpush
 </x-app-layout>
+@include('layouts.footer')  
