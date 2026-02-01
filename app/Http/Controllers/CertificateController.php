@@ -2,93 +2,71 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Certificate;
 use App\Models\Course;
-use App\Models\Lesson;
-use App\Models\LessonCompletion;
+use App\Models\Certificate;
+use App\Models\CertificateTemplate;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Barryvdh\DomPDF\Facade\Pdf; // <--- Import PDF
 
 class CertificateController extends Controller
 {
-    // 1. SISWA: Request / Generate Sertifikat
     public function request(Course $course)
     {
-        $userId = Auth::id();
-
-        // A. CEK APAKAH SUDAH SELESAI 100% (Safety Check)
-        $totalLessons = Lesson::whereHas('chapter', fn($q) => $q->where('course_id', $course->id))->count();
-        $completedLessons = LessonCompletion::where('user_id', $userId)
-            ->where('course_id', $course->id)
-            ->count();
-
-        if ($completedLessons < $totalLessons) {
-            return back()->with('error', 'Anda belum menyelesaikan seluruh materi.');
-        }
-
-        // B. CEK APAKAH SUDAH PERNAH REQUEST
-        $existing = Certificate::where('user_id', $userId)
+        // Cek apakah sudah pernah request
+        $existingCert = Certificate::where('user_id', Auth::id())
             ->where('course_id', $course->id)
             ->first();
 
-        if ($existing) {
-            return back()->with('error', 'Sertifikat sudah diajukan.');
+        if ($existingCert) {
+            return back()->with('error', 'Anda sudah mengajukan sertifikat ini.');
         }
 
-        // C. TENTUKAN STATUS BERDASARKAN KEBIJAKAN KURSUS
-        // Jika Policy 'auto', status langsung 'approved'
-        // Jika Policy 'manual', status 'pending'
-        if ($course->certificate_policy === 'auto') {
-            $status = 'approved';
-            $issuedAt = now();
-            $msg = 'Selamat! Sertifikat Anda berhasil diterbitkan.';
-        } else {
-            $status = 'pending';
-            $issuedAt = null;
-            $msg = 'Permintaan dikirim! Menunggu persetujuan Admin.';
-        }
+        // === [LOGIKA PEMBUATAN ID SERTIFIKAT] ===
+        // Format yang diinginkan: C[ID_KURSUS]_[TANGGAL]_[RANDOM]
+        // Contoh Hasil: C012_01022026_X7Z9
+        
+        // 1. Ambil ID Kursus dan pad dengan nol di depan (misal ID 5 jadi 005)
+        $courseCode = str_pad($course->id, 3, '0', STR_PAD_LEFT);
+        
+        // 2. Ambil Tanggal Hari Ini (Format: HariBulanTahun -> 01022026)
+        $dateCode = date('dmY');
+        
+        // 3. String Random 4 karakter agar unik
+        $randomCode = strtoupper(Str::random(4));
 
-        // D. CREATE DATABASE
+        // 4. Gabungkan
+        $finalCertificateId = "C{$courseCode}_{$dateCode}_{$randomCode}";
+        // =========================================
+
         Certificate::create([
-            'user_id' => $userId,
+            'user_id' => Auth::id(),
             'course_id' => $course->id,
-            'certificate_code' => 'CERT-' . strtoupper(Str::random(8)),
-            'status' => $status,
-            'issued_at' => $issuedAt,
+            'status' => 'pending', 
+            'certificate_code' => $finalCertificateId, // Masukkan kode custom tadi
         ]);
 
-        return back()->with('success', $msg);
+        return back()->with('success', 'Permintaan sertifikat dikirim! Tunggu verifikasi admin.');
     }
 
-    // 2. SISWA: Download PDF
     public function download(Certificate $certificate)
     {
-        // Validasi Pemilik
-        if ($certificate->user_id != Auth::id()) {
-            abort(403, 'Unauthorized');
+        // Validasi User / Admin
+        if (Auth::id() !== $certificate->user_id && Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
         }
 
-        // Validasi Status
-        if ($certificate->status != 'approved') {
+        // Cek status
+        if ($certificate->status !== 'approved' && Auth::user()->role !== 'admin') {
             return back()->with('error', 'Sertifikat belum disetujui.');
         }
 
-        // Data untuk dicetak di PDF
-        $data = [
-            'name' => $certificate->user->name,
-            'course' => $certificate->course->title,
-            'date' => $certificate->issued_at->format('d F Y'),
-            'code' => $certificate->certificate_code,
-        ];
-
-        // Load View PDF
-        $pdf = Pdf::loadView('certificates.template', $data);
-        
-        // Atur ukuran kertas (Landscape A4 biasanya untuk sertifikat)
+        // Ambil Template & Load PDF
+        $template = CertificateTemplate::first();
+        $pdf = Pdf::loadView('certificates.template', compact('certificate', 'template'));
         $pdf->setPaper('a4', 'landscape');
 
-        return $pdf->download('Sertifikat-' . $certificate->course->slug . '.pdf');
+        return $pdf->stream('Sertifikat-' . $certificate->certificate_code . '.pdf');
     }
 }

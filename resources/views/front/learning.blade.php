@@ -137,7 +137,7 @@
                             </div>
                         </div>
 
-                    {{-- 2. JIKA TIPE TUGAS (ASSIGNMENT) - REDESIGN BARU --}}
+                    {{-- 2. JIKA TIPE TUGAS (ASSIGNMENT) --}}
                     @elseif($currentLesson->type == 'assignment')
                         
                         <div class="bg-white border border-gray-100 rounded-3xl shadow-lg overflow-hidden">
@@ -344,60 +344,49 @@
                                 </div>
                             </div>
 
-                            {{-- === LOGIC TOMBOL SERTIFIKAT === --}}
+                            {{-- === LOGIC TOMBOL SERTIFIKAT (REDESIGN BARU) === --}}
+{{-- === CARD SERTIFIKAT SIMPEL (REPLACED) === --}}
                             @if($progress == 100)
                                 @php
                                     $myCert = \App\Models\Certificate::where('user_id', Auth::id())
                                                     ->where('course_id', $course->id)->first();
                                 @endphp
 
-                                <div class="relative z-10 text-center">
-                                    <div class="py-3 px-4 bg-slate-50 rounded-lg border border-slate-100 mb-4">
-                                        <h4 class="text-slate-800 font-bold text-sm">Kompetensi Tercapai</h4>
-                                        <p class="text-slate-500 text-[11px] mt-0.5">Anda telah menyelesaikan seluruh materi.</p>
+                                <div class="mt-4 pt-4 border-t border-gray-100 relative z-10">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900 text-sm">Selamat!</h4>
+                                            <p class="text-[11px] text-gray-500 leading-tight">Kursus selesai. Silakan unduh sertifikat Anda.</p>
+                                        </div>
                                     </div>
-                                    
+
                                     @if(!$myCert)
                                         <form action="{{ route('front.certificate.request', $course->id) }}" method="POST">
                                             @csrf
-                                            <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-slate-800 transition shadow-lg shadow-slate-200 hover:shadow-xl transform hover:-translate-y-0.5">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            <button type="submit" class="w-full py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition shadow-sm">
                                                 Klaim Sertifikat
                                             </button>
                                         </form>
                                     @elseif($myCert->status == 'pending')
-                                        <button disabled class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-yellow-100 text-yellow-800 text-xs font-bold uppercase tracking-wider rounded-xl cursor-not-allowed">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                            Menunggu Verifikasi
-                                        </button>
+                                        <div class="w-full py-2 bg-yellow-50 text-yellow-700 text-xs font-bold rounded-lg border border-yellow-200 text-center cursor-wait">
+                                            Verifikasi Admin...
+                                        </div>
                                     @elseif($myCert->status == 'approved')
-                                        <a href="{{ route('front.certificate.download', $myCert->id) }}" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-green-700 transition shadow-lg shadow-green-200 hover:shadow-xl transform hover:-translate-y-0.5">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                            Download Sertifikat
+                                        <a href="{{ route('front.certificate.download', $myCert->id) }}" target="_blank" class="block w-full py-2 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition shadow-sm text-center">
+                                            Download PDF
                                         </a>
                                     @elseif($myCert->status == 'rejected')
-                                        <button disabled class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-100 text-red-800 text-xs font-bold uppercase tracking-wider rounded-xl cursor-not-allowed">
-                                            Permintaan Ditolak
-                                        </button>
+                                        <div class="w-full py-2 bg-red-50 text-red-700 text-xs font-bold rounded-lg border border-red-200 text-center">
+                                            Ditolak
+                                        </div>
                                     @endif
                                 </div>
-                                <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-50 rounded-full opacity-50 z-0"></div>
-                                <div class="absolute -top-6 -left-6 w-20 h-20 bg-slate-50 rounded-full opacity-50 z-0"></div>
-
-                            @else
-                                <div class="flex justify-between text-xs text-gray-500 font-medium relative z-10">
-                                    @php
-                                        $totalLessonsCount = $course->chapters->flatMap->lessons->count();
-                                        $completedLessonsCount = \App\Models\LessonCompletion::where('user_id', Auth::id())
-                                            ->where('course_id', $course->id)->count();
-                                    @endphp
-                                    <span class="flex items-center gap-1">
-                                        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        {{ $totalLessonsCount - $completedLessonsCount }} materi tersisa
-                                    </span>
-                                    <span class="text-indigo-600">Lanjutkan &rarr;</span>
-                                </div>
                             @endif
+                            {{-- === END CARD SERTIFIKAT === --}}
+
                         </div>
 
                         {{-- 2. DAFTAR MATERI --}}
@@ -435,19 +424,19 @@
                                                         <div class="flex-shrink-0">
                                                             @if($isLessonDone)
                                                                 <div class="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                                                                 </div>
                                                             @else
                                                                 <div class="{{ $isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500' }}">
-                                                                    @if($lesson->type == 'video')
-                                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                                                    @elseif($lesson->type == 'pdf')
-                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                                                    @elseif($lesson->type == 'assignment')
-                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                                                                    @else
-                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                                                    @endif
+                                                                        @if($lesson->type == 'video')
+                                                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                                                        @elseif($lesson->type == 'pdf')
+                                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                                                        @elseif($lesson->type == 'assignment')
+                                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                                                        @else
+                                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                                        @endif
                                                                 </div>
                                                             @endif
                                                         </div>

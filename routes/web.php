@@ -42,7 +42,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/course/{course:slug}/lesson/{lesson}/submit', [FrontController::class, 'submitQuiz'])->name('front.quiz.submit');
     Route::post('/course/{course:slug}/lesson/{lesson}/complete', [FrontController::class, 'markAsComplete'])->name('front.lesson.complete');
     
-    
     // Sertifikat
     Route::post('/course/{course}/certificate', [CertificateController::class, 'request'])->name('front.certificate.request');
     Route::get('/certificate/{certificate}/download', [CertificateController::class, 'download'])->name('front.certificate.download');
@@ -67,24 +66,29 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('/faqs/contact', [AdminFaqController::class, 'updateContact'])->name('faqs.update_contact');
     Route::get('courses/{course}/assignments', [CourseController::class, 'assignments'])->name('courses.assignments');
     
-    // Manajemen Soal (Opsional jika masih pakai route terpisah selain di LessonController)
+    // Manajemen Soal
     Route::get('lessons/{lesson}/questions', [QuestionController::class, 'index'])->name('lessons.questions.index');
     Route::post('lessons/{lesson}/questions', [QuestionController::class, 'store'])->name('lessons.questions.store');
     Route::delete('questions/{question}', [QuestionController::class, 'destroy'])->name('questions.destroy');
 
     // --- GRADING / PENILAIAN ---
-    // List Siswa per Tugas
     Route::get('lessons/{lesson}/users', [UserProgressController::class, 'index'])->name('lessons.users.index');
-    // Halaman Koreksi Jawaban Siswa
     Route::get('lessons/{lesson}/users/{user}', [UserProgressController::class, 'show'])->name('lessons.users.show');
-    // Update Nilai Satuan
     Route::put('answers/{userAnswer}/score', [UserProgressController::class, 'updateScore'])->name('answers.updateScore');
-    // Update Nilai Massal (Semua Soal Sekaligus) -> INI ROUTE BARU
     Route::put('lessons/{lesson}/users/{user}/grade', [UserProgressController::class, 'updateAllScores'])->name('lessons.users.gradeAll');
 
-    // Manajemen Sertifikat & User
+    // --- MANAJEMEN SERTIFIKAT & USER ---
+    
+    // [FIX] Route Settings HARUS Ditaruh DI ATAS Route {certificate} (Wildcard)
+    // Agar 'settings' tidak dianggap sebagai ID sertifikat.
+    Route::get('/certificates/settings', [AdminCertificateController::class, 'settings'])->name('certificates.settings');
+    Route::put('/certificates/settings', [AdminCertificateController::class, 'updateSettings'])->name('certificates.update_settings');
+
+    // Route Resource & Manual lainnya di bawahnya
     Route::get('/certificates', [AdminCertificateController::class, 'index'])->name('certificates.index');
     Route::put('/certificates/{certificate}', [AdminCertificateController::class, 'update'])->name('certificates.update');
+    
+    Route::resource('certificates', AdminCertificateController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
 });
 
