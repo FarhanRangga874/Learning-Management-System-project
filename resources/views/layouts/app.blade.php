@@ -4,15 +4,19 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'ALDI') }}</title>
+        <link rel="icon" type="image/svg+xml"
+            href="{{ asset('favicon-light.svg') }}"
+            media="(prefers-color-scheme: light)">
+
+        <link rel="icon" type="image/svg+xml"
+            href="{{ asset('favicon-dark.svg') }}"
+            media="(prefers-color-scheme: dark)">
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <link rel="icon" href="{{ asset('favicon.ico') }}">
-<link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-<link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
-
+        
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">

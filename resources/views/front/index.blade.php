@@ -17,56 +17,113 @@
     </style>
     @endpush
 
-    {{-- 1. HERO SECTION --}}
-    <div class="relative bg-gradient-to-b from-indigo-50 via-white to-white pt-24 pb-20 lg:pt-32 lg:pb-32 overflow-hidden">
-        {{-- Background Blobs --}}
-        <div class="absolute top-0 left-1/2 w-full -translate-x-1/2 h-full z-0 pointer-events-none">
-            <div class="absolute top-10 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-            <div class="absolute top-10 right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-            <div class="absolute -bottom-8 left-1/2 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+{{-- 1. HERO SECTION (Digital Literacy Theme) --}}
+    <div class="relative bg-white pt-20 pb-20 lg:pt-28 lg:pb-28 overflow-hidden border-b border-slate-100">
+        
+        {{-- Background: Technical Grid Pattern (Kesan Digital/Teknologi) --}}
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
         </div>
 
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-            {{-- Badge --}}
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-indigo-100 text-indigo-600 text-xs md:text-sm font-semibold mb-6 shadow-sm">
-                <span class="relative flex h-2.5 w-2.5">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
-                </span>
-                <span>Untuk Indonesia Makin Cakap Digital</span>
-            </div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                
+                {{-- KOLOM KIRI: COPYWRITING LITERASI DIGITAL --}}
+                <div class="max-w-2xl">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15] mb-6">
+                        Jelajahi Dunia Digital dengan
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 relative">
+                            Bijak & Aman.
+                        </span>
+                    </h1>
 
-            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight mb-4 md:mb-6 leading-tight">
-                Teknologi Jadi Mudah, <br class="hidden md:block" />
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
-                    Hidup Jadi Lebih Maju.
-                </span>
-            </h1>
+                    <p class="text-lg text-slate-600 leading-relaxed mb-8 pr-0 lg:pr-6">
+                        Platform edukasi literasi digital terlengkap. Pelajari keamanan siber, etika internet, hingga keterampilan teknis untuk bersaing di era revolusi industri 4.0.
+                    </p>
 
-            <p class="mt-4 max-w-2xl mx-auto text-base md:text-lg text-slate-600 mb-8 md:mb-10 leading-relaxed px-4">
-                Belajar skill digital dari dasar secara gratis. Mulai dari memakai internet dengan aman hingga membangun bisnis online.
-            </p>
+                    {{-- Search Bar --}}
+                    <div class="relative max-w-lg">
+                        <form action="{{ route('front.index') }}" method="GET" class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                            <input type="text" name="search" placeholder="Cari courses (misal: Hoaks, Phishing, Koding)..." 
+                                class="block w-full pl-12 pr-36 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition shadow-lg shadow-slate-200/40 text-base"
+                                value="{{ request('search') }}">
+                            
+                            <div class="absolute inset-y-1.5 right-1.5">
+                                <button type="submit" class="h-full px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-sm transition-colors duration-200 flex items-center gap-2">
+                                    Mulai Belajar
+                                </button>
+                            </div>
 
-            {{-- Search Bar --}}
-            <div class="max-w-xl mx-auto px-4">
-                <form action="{{ route('front.index') }}" method="GET" class="relative group">
-                    @if(request('category')) <input type="hidden" name="category" value="{{ request('category') }}"> @endif
-                    @if(request('access_type')) <input type="hidden" name="access_type" value="{{ request('access_type') }}"> @endif
-
-                    <div class="absolute inset-y-0 left-0 pl-4 md:pl-5 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 md:h-6 md:w-6 text-slate-400 group-focus-within:text-indigo-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            {{-- Hidden Inputs --}}
+                            @if(request('category')) <input type="hidden" name="category" value="{{ request('category') }}"> @endif
+                            @if(request('access_type')) <input type="hidden" name="access_type" value="{{ request('access_type') }}"> @endif
+                        </form>
                     </div>
-                    
-                    <input type="text" name="search" placeholder="Apa yang ingin dipelajari?" 
-                        class="block w-full pl-12 pr-28 md:pl-14 md:pr-32 py-3.5 md:py-4 bg-white border-2 border-indigo-50 rounded-full text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-xl shadow-indigo-100/50 text-sm md:text-base truncate"
-                        value="{{ request('search') }}">
+                </div>
+
+                {{-- KOLOM KANAN: UI MOCKUP (BUKAN GAMBAR, TAPI CSS) --}}
+                <div class="relative hidden lg:block">
+                    <div class="relative w-full aspect-[4/3] perspective-1000">
                         
-                    <div class="absolute inset-y-1.5 right-1.5">
-                        <button type="submit" class="h-full px-4 md:px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold text-xs md:text-sm transition-colors duration-200">
-                            Cari
-                        </button>
+                        {{-- Elemen Dekorasi Belakang --}}
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
+
+                        {{-- Card Utama: Simulasi Video Player / LMS --}}
+                        <div class="absolute top-0 right-0 w-[90%] bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 transform rotate-y-[-5deg] rotate-x-[5deg] transition-transform hover:rotate-0 duration-500 z-10">
+                            {{-- Browser Header --}}
+                            <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-100 mb-2">
+                                <div class="flex gap-1.5">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+                                </div>
+                                <div class="flex-1 text-center">
+                                    <div class="w-32 h-2 bg-slate-100 rounded-full mx-auto"></div>
+                                </div>
+                            </div>
+                            {{-- Content Dummy --}}
+                            <div class="relative bg-slate-800 rounded-xl aspect-video w-full overflow-hidden flex items-center justify-center group">
+                                <div class="absolute inset-0 bg-gradient-to-tr from-blue-600 to-indigo-600 opacity-80"></div>
+                                <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 shadow-lg group-hover:scale-110 transition">
+                                    <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                                {{-- Fake Progress Bar --}}
+                                <div class="absolute bottom-4 left-4 right-4 h-1 bg-white/30 rounded-full overflow-hidden">
+                                    <div class="w-2/3 h-full bg-blue-400"></div>
+                                </div>
+                            </div>
+                            <div class="p-4 space-y-3">
+                                <div class="h-4 w-3/4 bg-slate-100 rounded"></div>
+                                <div class="h-3 w-1/2 bg-slate-50 rounded"></div>
+                            </div>
+                        </div>
+
+                        {{-- Floating Card: Sertifikat / Achievement --}}
+                        <div class="absolute bottom-10 left-0 w-[45%] bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-100 p-4 transform translate-y-4 -translate-x-4 z-20">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-800">Sertifikat Lulus</div>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-50 rounded-lg p-2 flex gap-2 items-center">
+                                <div class="w-6 h-8 bg-slate-200 rounded border border-slate-300"></div>
+                                <div class="flex-1 space-y-1">
+                                    <div class="h-2 w-full bg-slate-200 rounded"></div>
+                                    <div class="h-2 w-2/3 bg-slate-200 rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-                </form>
+                </div>
+
             </div>
         </div>
     </div>
@@ -145,77 +202,63 @@
             </div>
 
 {{-- COURSE GRID (Redesigned) --}}
-            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                @forelse($courses as $course)
-                
-                <div class="group flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                    
-                    {{-- 1. Image & Overlay --}}
-                    <div class="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                        <img src="{{ Storage::url($course->thumbnail) }}" alt="{{ $course->title }}" 
-                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                        
-                        {{-- Gradient Overlay --}}
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300"></div>
-
-                        {{-- Category Badge (Top Left) --}}
-                        <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm border border-indigo-50 uppercase tracking-wider z-10">
-                            {{ $course->category->name }}
-                        </span>
-
-                        {{-- Access Badge (Top Right) --}}
-                        @if($course->access_type == 'open')
-                            <span class="absolute top-3 right-3 bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm z-10">
-                                GRATIS
-                            </span>
-                        @else
-                            <span class="absolute top-3 right-3 bg-slate-800/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1 z-10">
-                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                PRIVATE
-                            </span>
-                        @endif
-                    </div>
-
-                    {{-- 2. Content --}}
-                    <div class="p-4 flex flex-col flex-1">
-                        <h3 class="font-bold text-slate-900 text-sm md:text-base leading-snug line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">
-                            <a href="{{ route('front.details', $course->slug) }}" class="focus:outline-none">
-                                <span class="absolute inset-0 z-0"></span>
-                                {{ $course->title }}
-                            </a>
-                        </h3>
-                        
-                        <p class="text-xs text-slate-500 line-clamp-2 mb-4 leading-relaxed">
-                            {{ Str::limit(strip_tags($course->description), 70) }}
-                        </p>
-
-                        {{-- Footer Card (Author/Stats - Opsional, bisa dihapus jika tidak ada data) --}}
-                        <div class="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                            <span class="flex items-center gap-1">
-                                <svg class="w-3 h-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                                Materi Lengkap
-                            </span>
-                            <span class="group-hover:text-indigo-500 transition-colors flex items-center gap-1">
-                                Lihat Detail &rarr;
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                @empty
-                {{-- Empty State (Tidak Berubah) --}}
-                <div class="col-span-full py-16 text-center">
-                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-50 mb-6">
-                        <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <h3 class="text-lg font-bold text-slate-900">Belum ada kelas tersedia</h3>
-                    <p class="text-slate-500 mt-2 max-w-md mx-auto text-sm">Coba ubah kata kunci pencarian atau pilih kategori lain.</p>
-                    <a href="{{ route('front.index') }}" class="inline-block mt-6 px-6 py-2.5 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 text-sm">
-                        Reset Filter
-                    </a>
-                </div>
-                @endforelse
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    @forelse($courses as $course)
+    <div class="group relative flex flex-col bg-white rounded-[20px] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100/60">
+        
+        {{-- 1. Image Section (Full-bleed & Clean) --}}
+        <div class="relative aspect-[16/10] overflow-hidden">
+            <img src="{{ Storage::url($course->thumbnail) }}" alt="{{ $course->title }}" 
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+            
+            {{-- Category Badge tetap di gambar karena ini identitas visual --}}
+            <div class="absolute top-3 left-3">
+                <span class="bg-white/90 backdrop-blur-md text-slate-800 text-[9px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-lg shadow-sm">
+                    {{ $course->category->name }}
+                </span>
             </div>
+        </div>
+
+        {{-- 2. Content Section --}}
+        <div class="px-5 py-5 flex flex-col flex-1">
+            {{-- Access Type Badge (Moved here) --}}
+            <div class="mb-2">
+                @if($course->access_type == 'open')
+                    <span class="text-emerald-600 bg-emerald-50 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                        • GRATIS
+                    </span>
+                @else
+                    <span class="text-slate-500 bg-slate-100 text-[10px] font-bold px-2 py-0.5 rounded-md flex inline-flex items-center gap-1">
+                        <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
+                        PRIVATE
+                    </span>
+                @endif
+            </div>
+
+            <h3 class="font-bold text-slate-800 text-sm md:text-[15px] leading-snug line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">
+                <a href="{{ route('front.details', $course->slug) }}" class="focus:outline-none">
+                    <span class="absolute inset-0 z-10"></span>
+                    {{ $course->title }}
+                </a>
+            </h3>
+            
+            <p class="text-[12px] text-slate-500 line-clamp-2 mb-5 font-normal leading-relaxed">
+                {{ Str::limit(strip_tags($course->description), 60) }}
+            </p>
+
+            {{-- Info & Action --}}
+            <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-end">
+                
+                <span class="flex items-center gap-1 text-[11px] font-bold text-indigo-600 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    Detail
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </span>
+            </div>
+        </div>
+    </div>
+    @empty
+        @endforelse
+</div>
 
             {{-- PAGINATION (Redesigned) --}}
             <div class="mt-12 flex justify-center">
@@ -283,7 +326,7 @@
                     <div class="h-10 w-px bg-slate-100 hidden md:block"></div>
 
                     {{-- Tombol WhatsApp --}}
-                    <a href="{{ $waLink }}" target="_blank" class="group relative px-6 py-3 bg-indigo-600 text-white rounded-full font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-3">
+                    <a href="{{ $waLink }}" target="_blank" class="group relative px-6 py-3 bg-green-600 text-white rounded-full font-bold text-sm hover:bg-greeb-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-3">
                         
                         {{-- Ikon WhatsApp SVG --}}
                         <svg class="w-5 h-5 fill-current opacity-90 group-hover:opacity-100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
