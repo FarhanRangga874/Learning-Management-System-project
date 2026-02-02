@@ -15,8 +15,8 @@
                     <div class="flex items-start gap-4">
                         <div class="p-2 bg-white/5 rounded-2xl backdrop-blur-sm border border-white/10">
                             <img src="{{ asset('images/logo_kabupaten_blitar.png') }}" 
-                                 alt="Logo Pemkab Blitar" 
-                                 class="h-12 w-auto object-contain drop-shadow-md">
+                                alt="Logo Pemkab Blitar" 
+                                class="h-12 w-auto object-contain drop-shadow-md">
                         </div>
                         <div class="flex flex-col justify-center h-16">
                             <h3 class="text-white font-bold text-lg leading-tight tracking-tight">Dinas Kominfo<br>Kabupaten Blitar</h3>
