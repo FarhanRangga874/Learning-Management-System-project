@@ -25,7 +25,6 @@
                     </li>
                 </ol>
             </nav>
-
             {{-- 2. JUDUL UTAMA --}}
             <div class="mb-8">
                 <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">

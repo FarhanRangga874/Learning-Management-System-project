@@ -2,15 +2,15 @@
         open: false, 
         showSearch: false,
         isLanding: {{ request()->routeIs('front.index') ? 'true' : 'false' }} 
-     }" 
-     @scroll.window="showSearch = (window.pageYOffset > 400)"
-     class="w-full top-0 z-50 transition-all duration-300 border-b"
-     :class="{
+        }" 
+    @scroll.window="showSearch = (window.pageYOffset > 400)"
+    class="w-full top-0 z-50 transition-all duration-300 border-b"
+    :class="{
         'fixed': isLanding, 
         'sticky': !isLanding,
         'bg-white border-gray-200 shadow-sm': !isLanding || showSearch,
         'bg-transparent border-transparent': isLanding && !showSearch
-     }">
+    }">
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 relative">
@@ -19,31 +19,48 @@
             <div class="flex items-center gap-6 flex-1">
                 
                 {{-- Logo --}}
-                <div class="shrink-0 flex items-center">
-                    <a href="/" class="flex items-center gap-2 group transition hover:opacity-80">
-                        <x-application-logo class="block h-9 w-auto fill-current text-indigo-600 transition group-hover:scale-105" />
-                        <span class="font-black text-xl tracking-tighter font-sans hidden sm:block" 
-                              :class="(!isLanding || showSearch) ? 'text-gray-900' : 'text-slate-800'">
-                            <span class="text-indigo-600">AL</span>DI
-                        </span>
-                    </a>
-                </div>
+            <div class="shrink-0 flex items-center">
+    <a href="/" class="flex items-center group hover:opacity-80">
+
+        <!-- LOGO -->
+        <x-application-logo
+            class="block h-12 w-auto fill-current text-indigo-600
+                   transition-transform duration-200
+                   translate-y-[1px] group-hover:scale-105
+                   mr-1.5"
+        />
+
+        <!-- WORDMARK -->
+        <div class="hidden sm:flex flex-col leading-none">
+            <span
+                class="font-black text-xl tracking-tighter font-sans"
+                :class="(!isLanding || showSearch) ? 'text-gray-900' : 'text-slate-800'">
+                <span class="text-indigo-600">AL</span>DI
+            </span>
+
+            <span class="mt-0.5 text-[11px] font-medium tracking-wide text-gray-500">
+                Akses Literasi Digital
+            </span>
+        </div>
+
+    </a>
+</div>
 
                 {{-- SEARCH BAR (DESKTOP) --}}
                 @if(request()->routeIs('front.index'))
                     <div class="hidden md:block w-full max-w-sm transition-all duration-500 ease-out"
-                         x-show="showSearch"
-                         x-transition:enter="opacity-0 -translate-x-4"
-                         x-transition:enter-end="opacity-100 translate-x-0"
-                         x-transition:leave="opacity-0 -translate-x-4"
-                         style="display: none;">
+                        x-show="showSearch"
+                        x-transition:enter="opacity-0 -translate-x-4"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                        x-transition:leave="opacity-0 -translate-x-4"
+                        style="display: none;">
                         
                         <form action="{{ route('front.index') }}" method="GET" class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </div>
                             <input type="text" name="search" placeholder="Cari kelas..." 
-                                   class="block w-full pl-11 pr-4 py-2 bg-gray-100 border-transparent rounded-full text-sm text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-transparent transition-all shadow-sm group-hover:bg-gray-50">
+                                class="block w-full pl-11 pr-4 py-2 bg-gray-100 border-transparent rounded-full text-sm text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-transparent transition-all shadow-sm group-hover:bg-gray-50">
                         </form>
                     </div>
                 @endif
