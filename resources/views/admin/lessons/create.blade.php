@@ -158,7 +158,7 @@
                                         <div class="mb-6 flex items-center justify-between p-4 bg-white border border-slate-200 rounded-lg hover:border-indigo-200 transition-colors">
                                             <div>
                                                 <h4 class="text-sm font-bold text-slate-800">Tampilkan Kunci Jawaban</h4>
-                                                <p class="text-xs text-slate-500 mt-0.5">Jika aktif, siswa dapat melihat jawaban benar setelah selesai.</p>
+                                                <p class="text-xs text-slate-500 mt-0.5">Jika aktif, pengguna dapat melihat jawaban benar setelah selesai.</p>
                                             </div>
                                             <label class="relative inline-flex items-center cursor-pointer">
                                                 <input type="checkbox" name="show_results" value="1" class="sr-only peer" checked>
