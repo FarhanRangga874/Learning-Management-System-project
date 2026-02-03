@@ -86,7 +86,7 @@
                     @auth
                         <a href="{{ route('dashboard') }}" class="text-sm font-medium transition-colors hover:text-indigo-600"
                             :class="(!isLanding || showSearch) ? 'text-gray-600' : 'text-slate-700'">
-                            {{ __('Kelas Saya') }}
+                            {{ __('Dashboard') }}
                         </a>
 
 

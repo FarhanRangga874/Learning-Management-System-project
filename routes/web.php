@@ -55,7 +55,8 @@ Route::middleware(['auth'])->group(function () {
 // ====================================================
 // RUTE ADMIN (Manajemen Konten & Penilaian)
 // ====================================================
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+// [PENTING] Middleware 'is_admin' ditambahkan di sini
+Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Manajemen Master Data
     Route::resource('categories', CategoryController::class);
@@ -80,7 +81,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // --- MANAJEMEN SERTIFIKAT & USER ---
     
     // [FIX] Route Settings HARUS Ditaruh DI ATAS Route {certificate} (Wildcard)
-    // Agar 'settings' tidak dianggap sebagai ID sertifikat.
     Route::get('/certificates/settings', [AdminCertificateController::class, 'settings'])->name('certificates.settings');
     Route::put('/certificates/settings', [AdminCertificateController::class, 'updateSettings'])->name('certificates.update_settings');
 
