@@ -18,9 +18,8 @@
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            {{-- BAGIAN 1: QUICK ACTIONS (TIDAK DIUBAH) --}}
+            {{-- BAGIAN 1: QUICK ACTIONS --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                {{-- Card 1: Buat Kursus Baru --}}
                 <a href="{{ route('admin.courses.create') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-100 transition-all duration-300 relative overflow-hidden">
                     <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div class="relative z-10">
@@ -32,7 +31,6 @@
                     </div>
                 </a>
 
-                {{-- Card 2: Kelola Kategori --}}
                 <a href="{{ route('admin.categories.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-purple-100 transition-all duration-300 relative overflow-hidden">
                     <div class="absolute right-0 top-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div class="relative z-10">
@@ -44,7 +42,6 @@
                     </div>
                 </a>
 
-                {{-- Card 3: Kelola Sertifikat --}}
                 <a href="{{ route('admin.certificates.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-yellow-100 transition-all duration-300 relative overflow-hidden">
                     <div class="absolute right-0 top-0 w-24 h-24 bg-yellow-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div class="relative z-10">
@@ -57,7 +54,7 @@
                 </a>
             </div>
 
-            {{-- BAGIAN 1.5: UTILITIES (TIDAK DIUBAH) --}}
+            {{-- BAGIAN 1.5: UTILITIES --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 group hover:border-pink-200 transition-all">
                     <div class="flex items-center gap-4 w-full sm:w-auto">
@@ -90,25 +87,19 @@
                 </div>
             </div>
 
-            {{-- ======================================================= --}}
-            {{-- RE-DESIGN BAGIAN REKAP & ANALYTICS --}}
-            {{-- ======================================================= --}}
-            
-            {{-- 1. KPI CARDS (Statistik Utama) --}}
+            {{-- BAGIAN 2: REKAP & ANALYTICS --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {{-- Card A: Siswa Baru (Sesuai Filter) --}}
+                {{-- KPI Cards --}}
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between relative overflow-hidden">
                     <div class="relative z-10">
                         <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Pengguna baru ({{ ucfirst(request('range', 'month')) }})</p>
                         <h4 class="text-3xl font-black text-indigo-600 mt-2">{{ $totalEnrollmentsInPeriod }}</h4>
                     </div>
                     <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">
-                        {{-- SVG DIPERBAIKI (User Add) --}}
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                     </div>
                 </div>
 
-                {{-- Card B: Total Kursus --}}
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
                         <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total Kursus</p>
@@ -119,7 +110,6 @@
                     </div>
                 </div>
 
-                {{-- Card C: Total Pengguna --}}
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
                         <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total User</p>
@@ -131,13 +121,10 @@
                 </div>
             </div>
 
-            {{-- 2. CHART & WIDGET TOP KURSUS --}}
+            {{-- Chart & Top Kursus --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                
-                {{-- Kiri: Chart (DENGAN TOTAL DI HEADER) --}}
                 <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                        {{-- Judul dan Angka Total --}}
                         <div>
                             <h4 class="font-bold text-gray-800 text-lg">Trend Pendaftaran</h4>
                             <div class="flex items-center gap-2 mt-1">
@@ -148,8 +135,6 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        {{-- Filter Waktu Compact --}}
                         <div class="flex bg-gray-100 rounded-lg p-1">
                             @php
                                 $filters = ['week' => 'Minggu', 'month' => 'Bulan', 'year' => 'Tahun'];
@@ -168,13 +153,11 @@
                     </div>
                 </div>
 
-                {{-- Kanan: Top Kursus Widget --}}
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
                     <div class="p-5 border-b border-gray-50 bg-gray-50/30">
                         <h4 class="font-bold text-gray-800 text-sm">Top Kursus</h4>
                         <p class="text-xs text-gray-500">Paling diminati periode ini.</p>
                     </div>
-                    
                     <div class="flex-1 overflow-y-auto p-2 max-h-[300px] lg:max-h-none">
                         @forelse($recapCourses as $index => $rc)
                         <div class="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition mb-1 group">
@@ -192,7 +175,6 @@
                         </div>
                         @empty
                         <div class="h-full flex flex-col items-center justify-center text-gray-400 py-10">
-                            <svg class="w-8 h-8 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             <span class="text-xs">Belum ada data.</span>
                         </div>
                         @endforelse
@@ -200,7 +182,7 @@
                 </div>
             </div>
 
-            {{-- 3. SEARCH BAR (Terpisah) --}}
+            {{-- SEARCH BAR --}}
             <div class="mb-6">
                 <form method="GET" action="{{ route('admin.courses.index') }}" class="relative w-full md:w-1/2 ml-auto">
                     <input type="hidden" name="range" value="{{ request('range', 'month') }}">
@@ -211,7 +193,6 @@
                         <input type="text" name="search" value="{{ request('search') }}" 
                             class="block w-full pl-10 pr-24 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition" 
                             placeholder="Cari judul kursus...">
-                        
                         <div class="absolute right-1.5 top-1.5 bottom-1.5">
                             <button type="submit" class="h-full px-4 bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold rounded-lg transition">
                                 Cari
@@ -228,10 +209,12 @@
                 </form>
             </div>
 
-            {{-- BAGIAN 3: TABEL KURSUS UTAMA (TIDAK DIUBAH) --}}
+            {{-- ======================================================= --}}
+            {{-- TABEL TUNGGAL: DAFTAR KURSUS & LAPORAN STATISTIK --}}
+            {{-- ======================================================= --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-gray-100">
                 <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h3 class="font-bold text-gray-800 text-lg">Daftar Kursus</h3>
+                    <h3 class="font-bold text-gray-800 text-lg">Daftar Kursus & Laporan</h3>
                     <div class="text-xs text-gray-500">Menampilkan {{ $courses->count() }} data terbaru</div>
                 </div>
                 
@@ -242,7 +225,12 @@
                                 <th scope="col" class="px-6 py-4 font-bold w-24">Cover</th>
                                 <th scope="col" class="px-6 py-4 font-bold">Detail Kursus</th>
                                 <th scope="col" class="px-6 py-4 font-bold">Akses</th>
-                                <th scope="col" class="px-6 py-4 font-bold text-center">Statistik</th>
+                                
+                                {{-- KOLOM STATISTIK DIGABUNG KE SINI --}}
+                                <th scope="col" class="px-6 py-4 font-bold text-center">Siswa</th>
+                                <th scope="col" class="px-6 py-4 font-bold text-center">Kelulusan</th>
+                                <th scope="col" class="px-6 py-4 font-bold text-center">Nilai Avg</th>
+                                
                                 <th scope="col" class="px-6 py-4 font-bold text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -280,12 +268,32 @@
                                         </div>
                                     @endif
                                 </td>
+                                
+                                {{-- 1. JUMLAH SISWA --}}
                                 <td class="px-6 py-4 align-top text-center">
-                                    <div class="inline-flex flex-col items-center">
-                                        <span class="text-lg font-bold text-gray-900">{{ $course->students_count }}</span>
-                                        <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wide">Siswa</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                                        {{ $course->students_count }}
+                                    </span>
+                                </td>
+
+                                {{-- 2. TINGKAT KELULUSAN --}}
+                                <td class="px-6 py-4 align-top text-center">
+                                    <div class="flex flex-col items-center">
+                                        <span class="text-sm font-bold {{ $course->completion_rate >= 50 ? 'text-green-600' : 'text-orange-500' }}">
+                                            {{ $course->completion_rate }}%
+                                        </span>
+                                        <span class="text-[10px] text-gray-400">({{ $course->certificates_count }} Lulus)</span>
                                     </div>
                                 </td>
+
+                                {{-- 3. RATA-RATA NILAI --}}
+                                <td class="px-6 py-4 align-top text-center">
+                                     <span class="px-2 py-1 rounded text-xs font-bold 
+                                        {{ $course->average_score >= 70 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        {{ $course->average_score }}
+                                    </span>
+                                </td>
+
                                 <td class="px-6 py-4 align-middle">
                                     <div class="flex justify-center items-center gap-2">
                                         <a href="{{ route('admin.courses.assignments', $course) }}" class="p-2 bg-white border border-gray-200 rounded-lg text-purple-600 hover:bg-purple-50 hover:border-purple-200 transition shadow-sm" title="Lihat Tugas & Nilai">
@@ -312,7 +320,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-16 text-center">
+                                <td colspan="7" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                                             <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -348,21 +356,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const ctx = document.getElementById('enrollmentChart').getContext('2d');
-            
-            // Data dikirim dari Controller
             const rawData = @json($enrollmentTrend);
-            
-            // GUNAKAN 'item.label' AGAR TAMPILANNYA "Senin, 20 Jan"
             const labels = rawData.map(item => item.label); 
             const dataValues = rawData.map(item => item.count);
 
             new Chart(ctx, {
-                type: 'line', // Tipe grafik garis
+                type: 'line',
                 data: {
-                    labels: labels, // Label sumbu X
+                    labels: labels,
                     datasets: [{
                         label: 'Siswa Bergabung',
-                        data: dataValues, // Data sumbu Y
+                        data: dataValues,
                         borderColor: '#4f46e5',
                         backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         borderWidth: 2,

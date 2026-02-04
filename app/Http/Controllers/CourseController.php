@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller;
 use App\Models\User; 
 use App\Models\Lesson;
-use App\Models\UserAnswer;
-use App\Models\Enrollment;
 use Carbon\Carbon;
 
 class CourseController extends Controller
@@ -20,91 +18,136 @@ class CourseController extends Controller
     /**
      * Display a listing of the resource.
      */
-public function index(Request $request)
-{
-    // 1. Set Bahasa Indonesia
-    Carbon::setLocale('id'); 
-    
-    $range = $request->input('range', 'month');
-    $startDate = now();
-    $dateFormat = 'Y-m-d'; 
+    public function index(Request $request)
+    {
+        // 1. Set Bahasa Indonesia
+        Carbon::setLocale('id'); 
+        
+        $range = $request->input('range', 'month');
+        $startDate = now();
+        $dateFormat = 'Y-m-d'; 
 
-    // Tentukan rentang waktu
-    switch ($range) {
-        case 'today':
-            $startDate = now()->startOfDay();
-            $dateFormat = 'H:00'; 
-            break;
-        case 'week':
-            $startDate = now()->startOfWeek();
-            break;
-        case 'month':
-            $startDate = now()->startOfMonth();
-            break;
-        case 'year':
-            $startDate = now()->startOfYear();
-            $dateFormat = 'Y-m'; 
-            break;
-        case 'all':
-            $startDate = Carbon::create(2000, 1, 1);
-            break;
-    }
+        // Tentukan rentang waktu
+        switch ($range) {
+            case 'today':
+                $startDate = now()->startOfDay();
+                $dateFormat = 'H:00'; 
+                break;
+            case 'week':
+                $startDate = now()->startOfWeek();
+                break;
+            case 'month':
+                $startDate = now()->startOfMonth();
+                break;
+            case 'year':
+                $startDate = now()->startOfYear();
+                $dateFormat = 'Y-m'; 
+                break;
+            case 'all':
+                $startDate = Carbon::create(2000, 1, 1);
+                break;
+        }
 
-    // 2. Ambil Data Mentah (Format SQL: 2026-01-20)
-    $rawTrend = \App\Models\Enrollment::select(
-            DB::raw("DATE_FORMAT(joined_at, '$dateFormat') as date"), 
-            DB::raw('count(*) as count')
-        )
-        ->where('joined_at', '>=', $startDate)
-        ->groupBy('date')
-        ->orderBy('date', 'asc')
+        // 2. Ambil Data Mentah untuk Chart
+        $rawTrend = \App\Models\Enrollment::select(
+                DB::raw("DATE_FORMAT(joined_at, '$dateFormat') as date"), 
+                DB::raw('count(*) as count')
+            )
+            ->where('joined_at', '>=', $startDate)
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
+
+        // 3. Format Label Chart
+        $enrollmentTrend = $rawTrend->map(function($item) use ($range) {
+            try {
+                if ($range == 'today') {
+                    $item->label = 'Jam ' . $item->date; 
+                } elseif ($range == 'year') {
+                    $item->label = Carbon::createFromFormat('Y-m', $item->date)->translatedFormat('F Y'); 
+                } else {
+                    $item->label = Carbon::parse($item->date)->translatedFormat('l, d M');
+                }
+            } catch (\Exception $e) {
+                $item->label = $item->date;
+            }
+            return $item;
+        });
+
+        // 4. Query Tabel Rekap Top Kursus
+        $recapCourses = Course::withCount(['students as recent_students_count' => function ($query) use ($startDate) {
+            $query->where('enrollments.joined_at', '>=', $startDate);
+        }])
+        ->having('recent_students_count', '>', 0)
+        ->orderByDesc('recent_students_count')
+        ->take(10)
         ->get();
 
-    // 3. PERCANTIK LABEL (Agar tampil: "Senin, 20 Jan")
-    $enrollmentTrend = $rawTrend->map(function($item) use ($range) {
-        try {
-            if ($range == 'today') {
-                $item->label = 'Jam ' . $item->date; // Contoh: Jam 14:00
-            } elseif ($range == 'year') {
-                $item->label = Carbon::createFromFormat('Y-m', $item->date)->translatedFormat('F Y'); // Contoh: Januari 2026
-            } else {
-                // INI YANG PENTING: Mengubah "2026-01-20" jadi "Senin, 20 Jan"
-                $item->label = Carbon::parse($item->date)->translatedFormat('l, d M');
-            }
-        } catch (\Exception $e) {
-            $item->label = $item->date;
+        $totalEnrollmentsInPeriod = $recapCourses->sum('recent_students_count');
+
+        // ==========================================================
+        // QUERY UTAMA LIST KURSUS & LAPORAN
+        // ==========================================================
+        
+        $query = Course::with('category')
+            ->withCount(['students', 'certificates']) 
+            // Load lessons -> questions -> userAnswers untuk hitung nilai
+            ->with(['lessons.questions.userAnswers']) 
+            ->orderBy('id', 'desc');
+
+        if ($request->has('search')) {
+            $query->where('title', 'LIKE', "%{$request->search}%");
         }
-        return $item;
-    });
 
-    // ... (Sisa kode query courses dan recap lainnya tetap sama) ...
-    
-    // Query Tabel Rekap Top Kursus
-    $recapCourses = Course::withCount(['students as recent_students_count' => function ($query) use ($startDate) {
-        $query->where('enrollments.joined_at', '>=', $startDate);
-    }])
-    ->having('recent_students_count', '>', 0)
-    ->orderByDesc('recent_students_count')
-    ->take(10)
-    ->get();
+        $courses = $query->paginate(10);
 
-    $totalEnrollmentsInPeriod = $recapCourses->sum('recent_students_count');
+        // Transformasi data untuk menghitung Completion Rate & Average Score
+        $courses->getCollection()->transform(function ($course) {
+            
+            // A. Hitung Completion Rate (Kelulusan)
+            $course->completion_rate = $course->students_count > 0 
+                ? round(($course->certificates_count / $course->students_count) * 100) 
+                : 0;
 
-    // Query Utama (Pencarian & List Course)
-    $query = Course::with('category')->withCount('students')->orderBy('id', 'desc');
-    if ($request->has('search')) {
-        $query->where('title', 'LIKE', "%{$request->search}%");
+            // B. PERBAIKAN Hitung Average Score (Menggunakan Kolom 'score' di Database)
+            // Logika baru: (Total Skor Didapat / Total Skor Maksimal) * 100
+            
+            $totalEarnedScore = 0;
+            $totalMaxScore = 0;
+
+            foreach ($course->lessons as $lesson) {
+                foreach ($lesson->questions as $question) {
+                    $answers = $question->userAnswers;
+                    
+                    if ($answers->isNotEmpty()) {
+                        // Jumlahkan nilai 'score' yang sudah tersimpan di DB (bukan cek manual text)
+                        $totalEarnedScore += $answers->sum('score');
+                        
+                        // Hitung nilai maksimal: Poin soal * Jumlah orang yang menjawab
+                        // Asumsi: setiap jawaban memiliki potensi nilai maksimal sebesar $question->points
+                        $totalMaxScore += ($question->points * $answers->count());
+                    }
+                }
+            }
+
+            // Hitung persentase rata-rata
+            $course->average_score = $totalMaxScore > 0 
+                ? round(($totalEarnedScore / $totalMaxScore) * 100) 
+                : 0;
+
+            return $course;
+        });
+
+        // ==========================================================
+        
+        $totalUsers = User::where('role', '!=', 'admin')->count();
+        $totalCourses = Course::count();
+
+        return view('admin.courses.index', compact(
+            'courses', 'totalUsers', 'totalCourses', 
+            'range', 'enrollmentTrend', 'recapCourses', 'totalEnrollmentsInPeriod'
+        ));
     }
-    $courses = $query->get();
-    
-    $totalUsers = User::where('role', '!=', 'admin')->count();
-    $totalCourses = Course::count();
-
-    return view('admin.courses.index', compact(
-        'courses', 'totalUsers', 'totalCourses', 
-        'range', 'enrollmentTrend', 'recapCourses', 'totalEnrollmentsInPeriod'
-    ));
-}
 
     /**
      * Show the form for creating a new resource.
@@ -127,24 +170,20 @@ public function index(Request $request)
             'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'access_type' => 'required|in:open,code',
             'access_code' => 'nullable|string',
-            
-            // --- PERBAIKAN 1: VALIDASI SERTIFIKAT ---
             'certificate_policy' => 'required|in:manual,auto', 
-            
             'course_keypoints' => 'nullable|array',
             'course_keypoints.*' => 'nullable|string|max:255',
         ]);
 
         DB::transaction(function () use ($request) {
             
-            // --- PERBAIKAN 2: MASUKKAN KE DATA YANG DISIMPAN ---
             $validated = $request->only([
                 'title', 
                 'category_id', 
                 'description', 
                 'access_type', 
                 'access_code',
-                'certificate_policy' // <--- PENTING: Agar opsi 'auto' tersimpan
+                'certificate_policy'
             ]);
             
             $validated['slug'] = Str::slug($request->title);
@@ -207,24 +246,20 @@ public function index(Request $request)
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'access_type' => 'required|in:open,code',
             'access_code' => 'nullable|string',
-            
-            // --- PERBAIKAN 1: VALIDASI SERTIFIKAT (UPDATE) ---
             'certificate_policy' => 'required|in:manual,auto',
-
             'course_keypoints' => 'nullable|array',
             'course_keypoints.*' => 'nullable|string|max:255',
         ]);
 
         DB::transaction(function () use ($request, $course) {
             
-            // --- PERBAIKAN 2: UPDATE DATA SERTIFIKAT ---
             $validated = $request->only([
                 'title', 
                 'category_id', 
                 'description', 
                 'access_type', 
                 'access_code',
-                'certificate_policy' // <--- PENTING: Agar perubahan tersimpan
+                'certificate_policy' 
             ]);
             
             $validated['slug'] = Str::slug($request->title);
@@ -272,27 +307,52 @@ public function index(Request $request)
         return redirect()->route('admin.courses.index')->with('success', 'Kursus berhasil dihapus!');
     }
 
-    public function assignments(Course $course)
+public function assignments(Course $course)
     {
-        // Ambil assignment
+        // 1. Load Relasi yang Dibutuhkan untuk Statistik
+        $course->loadCount(['students', 'certificates']);
+        $course->load(['lessons.questions.userAnswers']); // Load jawaban untuk hitung skor
+
+        // 2. Hitung Completion Rate (Kelulusan)
+        $course->completion_rate = $course->students_count > 0 
+            ? round(($course->certificates_count / $course->students_count) * 100) 
+            : 0;
+
+        // 3. Hitung Average Score (LOGIKA BARU: Berdasarkan Poin Nilai)
+        $totalEarnedScore = 0;
+        $totalMaxScore = 0;
+
+        foreach ($course->lessons as $lesson) {
+            foreach ($lesson->questions as $question) {
+                $answers = $question->userAnswers;
+                
+                if ($answers->isNotEmpty()) {
+                    // Jumlahkan nilai 'score' riil yang tersimpan di DB
+                    $totalEarnedScore += $answers->sum('score');
+                    
+                    // Hitung nilai maksimal: Poin soal * Jumlah siswa yang menjawab
+                    // Ini memberikan bobot yang benar (misal soal poin 100, dijawab 2 orang, max score = 200)
+                    $totalMaxScore += ($question->points * $answers->count());
+                }
+            }
+        }
+
+        // Hitung persentase: (Total Dapat / Total Maksimal) * 100
+        $course->average_score = $totalMaxScore > 0 
+            ? round(($totalEarnedScore / $totalMaxScore) * 100) 
+            : 0;
+
+        // 4. Ambil Data Assignment & Hitung Pending Review
         $assignments = Lesson::whereHas('chapter', function($q) use ($course) {
             $q->where('course_id', $course->id);
         })->where('type', 'assignment')->with('chapter')->get();
 
-        // Hitung "Pending Grading" untuk setiap assignment
         foreach($assignments as $assignment) {
-            // Cari jumlah User yang sudah jawab tapi total skornya masih 0 (atau logika lain sesuai kebutuhan)
-            // Cara yang lebih akurat: Hitung UserAnswer yang skornya belum diisi (jika nullable) atau skor 0
-            // Namun, karena di sistem kita skor default 0, kita bisa hitung user unik yang sudah jawab.
-            
-            // Logika: Kita butuh tahu berapa USER yang jawabannya belum kita sentuh.
-            // Asumsi: Jika admin sudah menilai, skor > 0.
-            // Jika belum menilai, skor = 0.
-            
+            // Hitung user yang jawabannya belum dinilai (score 0)
             $pendingCount = \App\Models\User::whereHas('answers', function($q) use ($assignment) {
                 $q->whereHas('question', function($subQ) use ($assignment) {
                     $subQ->where('lesson_id', $assignment->id);
-                })->where('score', 0); // Asumsi 0 = belum dinilai/salah total
+                })->where('score', 0); 
             })->count();
 
             $assignment->pending_count = $pendingCount;

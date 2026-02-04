@@ -16,36 +16,51 @@
     <div class="pb-24 bg-slate-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             
-            <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                {{-- Stat Card Kecil --}}
-                <div class="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 ml-auto">
-                    <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+            {{-- BAGIAN STATISTIK KURSUS --}}
+            {{-- Grid disesuaikan jadi 3 kolom karena 1 card dihapus --}}
+            <div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                {{-- Card 1: Total Siswa --}}
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Siswa</span>
                     </div>
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Total Tugas</p>
-                        <p class="text-lg font-bold text-slate-900 leading-none">{{ $assignments->count() }}</p>
-                    </div>
+                    <p class="text-2xl font-black text-slate-800">{{ $course->students_count }}</p>
                 </div>
+
+                {{-- Card 2: Rata-rata Nilai --}}
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-6 h-6 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg. Nilai</span>
+                    </div>
+                    <p class="text-2xl font-black {{ $course->average_score >= 70 ? 'text-emerald-600' : 'text-amber-600' }}">
+                        {{ $course->average_score }}
+                    </p>
+                </div>
+
+                {{-- Card 3: Total Tugas --}}
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Tugas</span>
+                    </div>
+                    <p class="text-2xl font-black text-slate-800">{{ $assignments->count() }}</p>
+                </div>
+
             </div>
 
-            {{-- Content --}}
+            {{-- Content Daftar Tugas --}}
             @if($assignments->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($assignments as $assignment)
-                        
-                        {{-- Logic Hitung "Perlu Koreksi" --}}
-                        @php
-                            // Ambil semua jawaban user untuk lesson ini
-                            // Filter user yang punya jawaban essay yang belum diupdate (created_at == updated_at)
-                            $pendingCount = \App\Models\User::whereHas('answers', function($q) use ($assignment) {
-                                $q->whereHas('question', function($subQ) use ($assignment) {
-                                    $subQ->where('lesson_id', $assignment->id)
-                                         ->where('type', 'essay');
-                                })->whereColumn('created_at', 'updated_at');
-                            })->count();
-                        @endphp
-
                         <div class="group bg-white border border-slate-200 rounded-xl p-5 hover:shadow-lg hover:border-indigo-200 transition duration-300 relative overflow-hidden flex flex-col h-full">
                             
                             {{-- Decorative Blob --}}
@@ -59,7 +74,6 @@
                                         {{ Str::limit($assignment->chapter->title, 20) }}
                                     </span>
                                     
-                                    {{-- Ikon Tipe Tugas --}}
                                     <div class="text-slate-300 group-hover:text-indigo-400 transition-colors">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                     </div>
@@ -70,7 +84,7 @@
                                     {{ $assignment->title }}
                                 </h3>
 
-                                {{-- Deskripsi Singkat (Opsional jika ada) --}}
+                                {{-- Deskripsi Singkat --}}
                                 <p class="text-sm text-slate-500 line-clamp-2 mb-4 flex-1">
                                     {{ Str::limit(strip_tags($assignment->content), 80) }}
                                 </p>
@@ -80,10 +94,10 @@
                                     
                                     {{-- Indikator Status Koreksi --}}
                                     <div class="flex items-center gap-2">
-                                        @if($pendingCount > 0)
+                                        @if($assignment->pending_count > 0)
                                             <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-lg border border-red-100 animate-pulse">
                                                 <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                                {{ $pendingCount }} Perlu Koreksi
+                                                {{ $assignment->pending_count }} Perlu Koreksi
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 text-xs text-slate-400 font-medium">
@@ -122,4 +136,4 @@
         </div>
     </div>
 </x-app-layout>
-@include('layouts.footer') 
+@include('layouts.footer')
