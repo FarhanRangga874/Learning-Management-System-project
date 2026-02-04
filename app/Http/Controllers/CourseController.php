@@ -95,48 +95,51 @@ class CourseController extends Controller
         // 5. REKAP KATEGORI (Chart & Stats)
         // ==========================================================
         
-        // A. Data Lengkap untuk Chart Interaktif (Tanpa Pagination)
-        $chartData = DB::table('categories')
-            ->leftJoin('courses', 'categories.id', '=', 'courses.category_id')
-            ->leftJoin('enrollments', 'courses.id', '=', 'enrollments.course_id')
-            ->leftJoin('certificates', 'courses.id', '=', 'certificates.course_id')
+        // A. Data Lengkap untuk Chart Interaktif (FIXED: Sekarang mengikuti Range Waktu)
+        // Menggunakan Model Category agar konsisten dengan Eloquent
+        $chartData = Category::leftJoin('courses', 'categories.id', '=', 'courses.category_id')
+            ->leftJoin('enrollments', function($join) use ($startDate) {
+                $join->on('courses.id', '=', 'enrollments.course_id')
+                     ->where('enrollments.joined_at', '>=', $startDate); // Filter Waktu Siswa
+            })
+            ->leftJoin('certificates', function($join) use ($startDate) {
+                $join->on('courses.id', '=', 'certificates.course_id')
+                     ->where('certificates.created_at', '>=', $startDate); // Filter Waktu Sertifikat
+            })
             ->select(
                 'categories.name',
+                // Tetap hitung total kursus (Inventory biasanya tidak kena filter waktu pendaftaran)
                 DB::raw('COUNT(DISTINCT courses.id) as courses_count'),
+                // Hitung siswa & sertifikat sesuai filter waktu
                 DB::raw('COUNT(DISTINCT enrollments.id) as students_count'),
                 DB::raw('COUNT(DISTINCT certificates.id) as certificates_count')
             )
             ->groupBy('categories.id', 'categories.name')
             ->get();
 
-        // B. Data untuk Tabel Statistik (Dengan Pagination & Filter Tanggal pada Siswa Baru)
+        // B. Data untuk Tabel Statistik (Pagination)
         $categoryStats = Category::leftJoin('courses', 'categories.id', '=', 'courses.category_id')
-            
-            // Filter Enrollments: Sesuai Range Waktu
             ->leftJoin('enrollments', function($join) use ($startDate) {
                 $join->on('courses.id', '=', 'enrollments.course_id')
                      ->where('enrollments.joined_at', '>=', $startDate);
             })
-            
-            // Filter Sertifikat: Sesuai Range Waktu
             ->leftJoin('certificates', function($join) use ($startDate) {
                 $join->on('courses.id', '=', 'certificates.course_id')
                      ->where('certificates.created_at', '>=', $startDate);
             })
-
             ->select(
                 'categories.id',
                 'categories.name',
-                DB::raw('COUNT(DISTINCT courses.id) as courses_count'), // Total Inventory
-                DB::raw('COUNT(DISTINCT enrollments.id) as students_count'), // Trending Period Ini
-                DB::raw('COUNT(DISTINCT certificates.id) as certificates_count') // Trending Period Ini
+                DB::raw('COUNT(DISTINCT courses.id) as courses_count'),
+                DB::raw('COUNT(DISTINCT enrollments.id) as students_count'),
+                DB::raw('COUNT(DISTINCT certificates.id) as certificates_count')
             )
             ->groupBy('categories.id', 'categories.name')
             ->orderByDesc('students_count')
             ->paginate(5, ['*'], 'cat_page');
 
         // ==========================================================
-        // QUERY UTAMA LIST KURSUS & LAPORAN
+        // 6. QUERY UTAMA LIST KURSUS & LAPORAN
         // ==========================================================
         
         $query = Course::with('category')
@@ -150,13 +153,29 @@ class CourseController extends Controller
 
         $courses = $query->paginate(10); 
 
+        // Variable bantu untuk perhitungan rata-rata global
+        $globalTotalScore = 0;
+        $globalTotalMaxScore = 0;
+        $globalCompletionRateTotal = 0;
+        $activeCoursesCount = 0; // Kursus yang memiliki siswa
+
         // Transformasi data untuk statistik per kursus
-        $courses->getCollection()->transform(function ($course) {
+        $courses->getCollection()->transform(function ($course) use (&$globalTotalScore, &$globalTotalMaxScore, &$globalCompletionRateTotal, &$activeCoursesCount) {
             
-            $course->completion_rate = $course->students_count > 0 
+            // Hitung Completion Rate per kursus
+            $completionRate = $course->students_count > 0 
                 ? round(($course->certificates_count / $course->students_count) * 100) 
                 : 0;
+            
+            $course->completion_rate = $completionRate;
 
+            // Tambahkan ke total global jika ada siswa
+            if ($course->students_count > 0) {
+                $globalCompletionRateTotal += $completionRate;
+                $activeCoursesCount++;
+            }
+
+            // Hitung Average Score per kursus
             $totalEarnedScore = 0;
             $totalMaxScore = 0;
 
@@ -174,18 +193,49 @@ class CourseController extends Controller
                 ? round(($totalEarnedScore / $totalMaxScore) * 100) 
                 : 0;
 
+            // Akumulasi skor global
+            $globalTotalScore += $totalEarnedScore;
+            $globalTotalMaxScore += $totalMaxScore;
+
             return $course;
         });
+
+        // ==========================================================
+        // 7. HITUNG STATISTIK GLOBAL (CARD BARU)
+        // ==========================================================
+        
+        // A. Rata-rata Kelulusan Global
+        // (Rata-rata dari persentase kelulusan semua kursus aktif)
+        $averageCompletionRate = $activeCoursesCount > 0 
+            ? round($globalCompletionRateTotal / $activeCoursesCount) 
+            : 0;
+
+        // B. Total Nilai Rata-rata Global
+        // (Total skor yang didapat semua user di semua kursus / Total skor maksimal yang mungkin didapat)
+        $overallAverageScore = $globalTotalMaxScore > 0 
+            ? round(($globalTotalScore / $globalTotalMaxScore) * 100) 
+            : 0;
 
         // ==========================================================
         
         $totalUsers = User::where('role', '!=', 'admin')->count();
         $totalCourses = Course::count();
 
+        // Jika request AJAX (dari klik pagination/filter), return partial view
+        if ($request->ajax()) {
+            return view('admin.courses.index', compact(
+                'courses', 'totalUsers', 'totalCourses', 
+                'range', 'enrollmentTrend', 'recapCourses', 'totalEnrollmentsInPeriod',
+                'categoryStats', 'chartData',
+                'averageCompletionRate', 'overallAverageScore' // <-- Kirim variable baru
+            ))->render(); // Render full view tapi nanti JS ambil bagian #main-ajax-wrapper saja
+        }
+
         return view('admin.courses.index', compact(
             'courses', 'totalUsers', 'totalCourses', 
             'range', 'enrollmentTrend', 'recapCourses', 'totalEnrollmentsInPeriod',
-            'categoryStats', 'chartData' 
+            'categoryStats', 'chartData',
+            'averageCompletionRate', 'overallAverageScore' // <-- Kirim variable baru
         ));
     }
 
