@@ -72,6 +72,7 @@ Info: Perintah --seed akan mengisi data awal (dummy) agar website siap digunakan
 
 ### 5. Jalankan Aplikasi
 Buka dua terminal berbeda untuk menjalankan server:
+(Pastikan memakai cd "Learning-Management-System-project")
 
 Terminal 1 (Mengaktifkan Laravel)
 ```bash
@@ -103,7 +104,7 @@ exit
 ```
 (Ganti 'email_anda@contoh.com' dengan email yang ingin dijadikan admin).
 
-### Opsi 2: Menggunakan Laravel Tinker (Disarankan)
+### Opsi 2: Menggunakan localhost
 1. Buka phpMyAdmin (biasanya di http://localhost/phpmyadmin).
 2. Pilih database lms_pkl.
 3. Klik tabel users.
