@@ -96,15 +96,10 @@ exit
 ```
 (Ganti 'email_anda@contoh.com' dengan email yang ingin dijadikan admin).
 
-Opsi 2: Menggunakan Laravel Tinker (Disarankan)
-### 1. Buka phpMyAdmin (biasanya di http://localhost/phpmyadmin).
-
-### 2. Pilih database lms_pkl.
-
-### 3. Klik tabel users.
-
-### 4. Cari baris user yang ingin diubah, klik Edit.
-
-### 5. Pada kolom role, ubah nilainya dari 'enroll' menjadi 'admin'.
-
-### 6. Klik Go / Simpan.
+### Opsi 2: Menggunakan Laravel Tinker (Disarankan)
+1. Buka phpMyAdmin (biasanya di http://localhost/phpmyadmin).
+2. Pilih database lms_pkl.
+3. Klik tabel users.
+4. Cari baris user yang ingin diubah, klik Edit.
+5. Pada kolom role, ubah nilainya dari 'enroll' menjadi 'admin'.
+6. Klik Go / Simpan.
