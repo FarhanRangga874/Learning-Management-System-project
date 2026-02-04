@@ -29,7 +29,7 @@ Sebelum memulai, pastikan perangkat Anda telah terinstal:
 ### 1. Clone Repositori
 Unduh source code proyek ke komputer lokal Anda.
 ```bash
-git clone [https://github.com/FarhanRangga874/Learning-Management-System.git]
+git clone https://github.com/FarhanRangga874/Learning-Management-System-project
 cd Learning-Management-System-project
 ```
 
