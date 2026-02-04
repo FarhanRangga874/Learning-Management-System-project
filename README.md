@@ -1,67 +1,113 @@
-<p align="center">
-  <a href="https://laravel.com" target="_blank">
-    <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo">
-  </a>
-</p>
+# Learning Management System (LMS) Project 📚
 
-<h1 align="center">Learning Management System (LMS) Project</h1>
+![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)
 
-<p align="center">
-    <a href="https://php.net"><img src="https://img.shields.io/badge/PHP-8.1+-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP Version"></a>
-    <a href="https://laravel.com"><img src="https://img.shields.io/badge/Laravel-10.x-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel Version"></a>
-    <a href="#"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License"></a>
-</p>
+Platform Learning Management System (LMS) modern yang dibangun untuk memfasilitasi kegiatan belajar mengajar secara digital. Sistem ini menghubungkan Admin dan Siswa (User) untuk pengelolaan kelas, materi, dan sertifikasi.
 
-<p align="center">
-  <b>Aplikasi manajemen pembelajaran berbasis web yang modern dan terintegrasi.</b>
-</p>
+## 🚀 Fitur Utama
 
----
+* **Autentikasi Aman**: Multi-level user (Admin & Peserta) dengan proteksi Middleware.
+* **Manajemen Kelas & Materi**: CRUD lengkap untuk Kursus (Courses), Bab (Chapters), dan Pelajaran (Lessons).
+* **Sistem Sertifikat**: Generate sertifikat otomatis dalam format PDF.
+* **User Progress**: Pelacakan kemajuan belajar siswa.
+* **Modern UI**: Antarmuka responsif menggunakan **Tailwind CSS**.
 
-## 📝 Deskripsi Proyek
+## 🛠️ Persyaratan Sistem (Prerequisites)
 
-**Learning Management System (LMS)** ini adalah platform berbasis Laravel yang dirancang untuk memfasilitasi kegiatan belajar mengajar. Sistem ini menghubungkan **Admin** dan **Pengguna** untuk pengelolaan kelas, materi pelajaran, dan administrasi akademik secara efisien.
+Sebelum memulai, pastikan perangkat Anda telah terinstal:
 
-### 🌟 Fitur Utama
-| Fitur | Deskripsi |
-| :--- | :--- |
-| 🔐 **Auth** | Login Multi-user (Admin dan Pengguna). |
-| 📚 **Kelas** | CRUD Kursus dan Materi Pelajaran. |
-| 📊 **Dashboard** | Statistik ringkas untuk monitoring data. |
-| 👥 **Users** | Manajemen data pengguna yang lengkap. |
+* **PHP** (Minimal versi 8.2)
+* **Composer**
+* **Node.js** & **NPM**
+* **MySQL** (Database)
+* **Git**
 
----
+## ⚙️ Panduan Instalasi (Installation Guide)
 
-## 🚀 Panduan Instalasi & Penggunaan
-
-Pastikan Anda sudah menginstall **PHP, Composer, Node.js, dan MySQL**. Jalankan perintah di bawah ini secara berurutan di terminal:
-
+### 1. Clone Repositori
+Unduh source code proyek ke komputer lokal Anda.
 ```bash
-# 1. Download & Masuk Folder
-git clone [https://github.com/FarhanRangga874/Learning-Management-System-project.git](https://github.com/FarhanRangga874/Learning-Management-System-project.git)
+git clone https://github.com/FarhanRangga874/Learning-Management-System-project
 cd Learning-Management-System-project
+```
 
-# 2. Install Library (Backend & Frontend)
+### 2. Install Dependensi
+Install library backend (Laravel) dan frontend (Vite/Tailwind).
+```bash
 composer install
 npm install
+```
 
-# 3. Setup Konfigurasi
+### 3. Konfigurasi Environment
+Salin file konfigurasi contoh.
+```bash
 cp .env.example .env
+```
+Konfigurasi Environment (sesuaikan dengan kebutuhan)
+```bash
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=lms_pkl  # Pastikan database ini sudah dibuat di MySQL
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 4. Konfigurasi Environment
+Jalankan perintah ini untuk membuat key aplikasi dan struktur tabel database.
+```bash
 php artisan key:generate
+php artisan migrate --seed
+```
+Info: Perintah --seed akan mengisi data awal (dummy) agar website siap digunakan.
 
-# --- PENTING: STOP SEBENTAR ---
-# Buka file .env di text editor, lalu ubah bagian ini:
-# DB_DATABASE=lms_pkl
-# (Pastikan database 'lms_pkl' sudah dibuat di MySQL)
+### 5. Konfigurasi Penyimpanan
+Langkah ini wajib agar gambar (Avatar/Thumbnail/Materi) bisa diakses publik.
+```bash
+php artisan storage:link
+```
+Info: Perintah --seed akan mengisi data awal (dummy) agar website siap digunakan.
 
-# 4. Buat Tabel Database
-php artisan migrate
+### 5. Jalankan Aplikasi
+Buka dua terminal berbeda untuk menjalankan server:
+(Pastikan memakai cd "Learning-Management-System-project")
 
-# 5. Menjalankan Aplikasi
-# Buka 2 Terminal berbeda dan jalankan perintah ini:
-
-# Terminal A:
+Terminal 1 (Mengaktifkan Laravel)
+```bash
 php artisan serve
+```
 
-# Terminal B:
+Terminal 2 (Mengaktifkan Tailwind)
+```bash
 npm run dev
+```
+(Akses aplikasi di: http://127.0.0.1:8000)
+
+## ⚙️ Mengubah User Menjadi Admin
+
+### Opsi 1: Menggunakan Laravel Tinker (Disarankan)
+Cara ini paling cepat karena menggunakan command line.
+
+### 1. Buka terminal di dalam folder project, lalu ketik:
+```bash
+php artisan tinker
+```
+
+### 2. Cari user berdasarkan email, ubah role-nya, lalu simpan. Ketik baris berikut satu per satu
+```bash
+$user = \App\Models\User::where('email', 'email_anda@contoh.com')->first();
+$user->role = 'admin';
+$user->save();
+exit
+```
+(Ganti 'email_anda@contoh.com' dengan email yang ingin dijadikan admin).
+
+### Opsi 2: Menggunakan localhost
+1. Buka phpMyAdmin (biasanya di http://localhost/phpmyadmin).
+2. Pilih database lms_pkl.
+3. Klik tabel users.
+4. Cari baris user yang ingin diubah, klik Edit.
+5. Pada kolom role, ubah nilainya dari 'enroll' menjadi 'admin'.
+6. Klik Go / Simpan.
