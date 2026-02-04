@@ -72,7 +72,7 @@
                 </div>
 
                 {{-- ======================================================= --}}
-                {{-- SECTION 1.5: UTILITY (FAQ & USER) - DITAMBAHKAN --}}
+                {{-- SECTION 1.5: UTILITY (FAQ & USER) --}}
                 {{-- ======================================================= --}}
                 <div class="mb-10">
                     <div class="flex items-center gap-3 mb-6">
@@ -164,6 +164,8 @@
                                     <tr>
                                         <th scope="col" class="px-6 py-4 font-bold w-24">Cover</th>
                                         <th scope="col" class="px-6 py-4 font-bold">Detail Kursus</th>
+                                        {{-- [MODIFIKASI] Menambahkan Kolom Tanggal --}}
+                                        <th scope="col" class="px-6 py-4 font-bold">Tanggal Dibuat</th>
                                         <th scope="col" class="px-6 py-4 font-bold">Akses</th>
                                         <th scope="col" class="px-6 py-4 font-bold text-center">User</th>
                                         <th scope="col" class="px-6 py-4 font-bold text-center">Kelulusan</th>
@@ -184,6 +186,15 @@
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
                                                 {{ $course->category->name }}
                                             </span>
+                                        </td>
+                                        {{-- [MODIFIKASI] Menampilkan Tanggal Y-m-d --}}
+                                        <td class="px-6 py-4 align-top">
+                                            <div class="font-bold text-gray-800 text-sm">
+                                                {{ $course->created_at->format('Y-m-d') }}
+                                            </div>
+                                            <div class="text-[10px] text-gray-400 mt-1">
+                                                {{ $course->created_at->diffForHumans() }}
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 align-top">
                                             @if($course->access_type == 'open')
@@ -250,7 +261,8 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="7" class="px-6 py-16 text-center">
+                                        {{-- Update Colspan menjadi 8 karena ada kolom baru --}}
+                                        <td colspan="8" class="px-6 py-16 text-center">
                                             <div class="flex flex-col items-center justify-center">
                                                 <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                                                     <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -295,14 +307,20 @@
                             <div class="w-1 h-6 bg-indigo-600 rounded-full"></div>
                             <div>
                                 <h3 class="text-lg font-bold text-gray-800">Laporan & Analitik</h3>
+                                {{-- [MODIFIKASI] Teks Tanggal di Header Laporan --}}
                                 <p class="text-xs text-gray-500">
                                     Menampilkan data untuk: 
                                     <span class="font-bold text-indigo-600">
-                                        @if(request('range') == 'today') Hari Ini
-                                        @elseif(request('range') == 'week') Minggu Ini
-                                        @elseif(request('range') == 'year') Tahun {{ date('Y') }}
-                                        @elseif(request('range') == 'all') Sepanjang Waktu
-                                        @else Bulan {{ date('F Y') }}
+                                        @if(request('range') == 'today') 
+                                            Hari Ini ({{ date('Y-m-d') }})
+                                        @elseif(request('range') == 'week') 
+                                            Minggu Ini
+                                        @elseif(request('range') == 'year') 
+                                            Tahun {{ date('Y') }}
+                                        @elseif(request('range') == 'all') 
+                                            Sepanjang Waktu
+                                        @else 
+                                            Bulan {{ date('Y-m') }} ({{ date('Y-m-d') }})
                                         @endif
                                     </span>
                                 </p>

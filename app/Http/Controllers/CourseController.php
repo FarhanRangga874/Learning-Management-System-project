@@ -25,29 +25,30 @@ class CourseController extends Controller
         
         $range = $request->input('range', 'month');
         $startDate = now();
-        $dateFormat = 'Y-m-d'; // Default per hari
+        // Default format (perhatikan tanda % untuk MySQL)
+        $dateFormat = '%Y-%m-%d'; 
 
         // Tentukan rentang waktu & format grouping chart
         switch ($range) {
             case 'today':
                 $startDate = now()->startOfDay();
-                $dateFormat = 'H:00'; // Grouping per Jam
+                $dateFormat = '%H:00'; // Grouping per Jam (MySQL Format)
                 break;
             case 'week':
                 $startDate = now()->startOfWeek();
-                $dateFormat = 'Y-m-d'; // Grouping per Hari
+                $dateFormat = '%Y-%m-%d'; // Grouping per Hari (MySQL Format)
                 break;
             case 'month':
                 $startDate = now()->startOfMonth();
-                $dateFormat = 'Y-m-d'; // Grouping per Hari
+                $dateFormat = '%Y-%m-%d'; // Grouping per Hari (MySQL Format)
                 break;
             case 'year':
                 $startDate = now()->startOfYear();
-                $dateFormat = 'Y-m'; // Grouping per Bulan
+                $dateFormat = '%Y-%m'; // Grouping per Bulan (MySQL Format)
                 break;
             case 'all':
                 $startDate = Carbon::create(2000, 1, 1);
-                $dateFormat = 'Y-m'; // Grouping per Bulan (Keseluruhan)
+                $dateFormat = '%Y-%m'; // Grouping per Bulan (MySQL Format)
                 break;
         }
 
@@ -65,16 +66,17 @@ class CourseController extends Controller
         $enrollmentTrend = $rawTrend->map(function($item) use ($range) {
             try {
                 if ($range == 'today') {
-                    // Contoh: Jam 08:00
+                    // Contoh: Jam 14:00
                     $item->label = 'Jam ' . $item->date; 
                 } elseif ($range == 'year' || $range == 'all') {
                     // Contoh: Januari 2025
                     $item->label = Carbon::createFromFormat('Y-m', $item->date)->translatedFormat('F Y'); 
                 } else {
-                    // Contoh: Senin, 20 Jan
-                    $item->label = Carbon::parse($item->date)->translatedFormat('l, d M');
+                    // Contoh: 2026 - 02 - 02 (Sesuai Permintaan)
+                    $item->label = Carbon::parse($item->date)->format('Y - m - d');
                 }
             } catch (\Exception $e) {
+                // Jika error, tampilkan data mentah
                 $item->label = $item->date;
             }
             return $item;
@@ -95,8 +97,7 @@ class CourseController extends Controller
         // 5. REKAP KATEGORI (Chart & Stats)
         // ==========================================================
         
-        // A. Data Lengkap untuk Chart Interaktif (FIXED: Sekarang mengikuti Range Waktu)
-        // Menggunakan Model Category agar konsisten dengan Eloquent
+        // A. Data Lengkap untuk Chart Interaktif
         $chartData = Category::leftJoin('courses', 'categories.id', '=', 'courses.category_id')
             ->leftJoin('enrollments', function($join) use ($startDate) {
                 $join->on('courses.id', '=', 'enrollments.course_id')
@@ -108,9 +109,7 @@ class CourseController extends Controller
             })
             ->select(
                 'categories.name',
-                // Tetap hitung total kursus (Inventory biasanya tidak kena filter waktu pendaftaran)
                 DB::raw('COUNT(DISTINCT courses.id) as courses_count'),
-                // Hitung siswa & sertifikat sesuai filter waktu
                 DB::raw('COUNT(DISTINCT enrollments.id) as students_count'),
                 DB::raw('COUNT(DISTINCT certificates.id) as certificates_count')
             )
@@ -201,17 +200,13 @@ class CourseController extends Controller
         });
 
         // ==========================================================
-        // 7. HITUNG STATISTIK GLOBAL (CARD BARU)
+        // 7. HITUNG STATISTIK GLOBAL
         // ==========================================================
         
-        // A. Rata-rata Kelulusan Global
-        // (Rata-rata dari persentase kelulusan semua kursus aktif)
         $averageCompletionRate = $activeCoursesCount > 0 
             ? round($globalCompletionRateTotal / $activeCoursesCount) 
             : 0;
 
-        // B. Total Nilai Rata-rata Global
-        // (Total skor yang didapat semua user di semua kursus / Total skor maksimal yang mungkin didapat)
         $overallAverageScore = $globalTotalMaxScore > 0 
             ? round(($globalTotalScore / $globalTotalMaxScore) * 100) 
             : 0;
@@ -221,21 +216,20 @@ class CourseController extends Controller
         $totalUsers = User::where('role', '!=', 'admin')->count();
         $totalCourses = Course::count();
 
-        // Jika request AJAX (dari klik pagination/filter), return partial view
         if ($request->ajax()) {
             return view('admin.courses.index', compact(
                 'courses', 'totalUsers', 'totalCourses', 
                 'range', 'enrollmentTrend', 'recapCourses', 'totalEnrollmentsInPeriod',
                 'categoryStats', 'chartData',
-                'averageCompletionRate', 'overallAverageScore' // <-- Kirim variable baru
-            ))->render(); // Render full view tapi nanti JS ambil bagian #main-ajax-wrapper saja
+                'averageCompletionRate', 'overallAverageScore'
+            ))->render(); 
         }
 
         return view('admin.courses.index', compact(
             'courses', 'totalUsers', 'totalCourses', 
             'range', 'enrollmentTrend', 'recapCourses', 'totalEnrollmentsInPeriod',
             'categoryStats', 'chartData',
-            'averageCompletionRate', 'overallAverageScore' // <-- Kirim variable baru
+            'averageCompletionRate', 'overallAverageScore'
         ));
     }
 
@@ -283,10 +277,8 @@ class CourseController extends Controller
                 $validated['thumbnail'] = $iconPath;
             }
             
-            // 1. Simpan Course
             $course = Course::create($validated);
 
-            // 2. Simpan Keypoints
             if ($request->has('course_keypoints')) {
                 foreach ($request->course_keypoints as $keypoint) {
                     if (!empty($keypoint)) {
@@ -296,7 +288,6 @@ class CourseController extends Controller
                     }
                 }
             }
-
         });
 
         return redirect()->route('admin.courses.index')->with('success', 'Kursus berhasil dibuat!');
@@ -362,10 +353,8 @@ class CourseController extends Controller
                 $validated['thumbnail'] = $iconPath;
             }
 
-            // 1. Update Course
             $course->update($validated);
 
-            // 2. Update Keypoints
             if ($request->has('course_keypoints')) {
                 $course->keypoints()->delete(); 
 
@@ -399,16 +388,13 @@ class CourseController extends Controller
 
     public function assignments(Course $course)
     {
-        // 1. Load Relasi yang Dibutuhkan untuk Statistik
         $course->loadCount(['students', 'certificates']);
-        $course->load(['lessons.questions.userAnswers']); // Load jawaban untuk hitung skor
+        $course->load(['lessons.questions.userAnswers']); 
 
-        // 2. Hitung Completion Rate
         $course->completion_rate = $course->students_count > 0 
             ? round(($course->certificates_count / $course->students_count) * 100) 
             : 0;
 
-        // 3. Hitung Average Score (Akurat: Berdasarkan Poin)
         $totalEarnedScore = 0;
         $totalMaxScore = 0;
 
@@ -426,13 +412,11 @@ class CourseController extends Controller
             ? round(($totalEarnedScore / $totalMaxScore) * 100) 
             : 0;
 
-        // 4. Ambil Data Assignment & Hitung Pending Review
         $assignments = Lesson::whereHas('chapter', function($q) use ($course) {
             $q->where('course_id', $course->id);
         })->where('type', 'assignment')->with('chapter')->get();
 
         foreach($assignments as $assignment) {
-            // Hitung user yang jawabannya belum dinilai (score 0)
             $pendingCount = \App\Models\User::whereHas('answers', function($q) use ($assignment) {
                 $q->whereHas('question', function($subQ) use ($assignment) {
                     $subQ->where('lesson_id', $assignment->id);
