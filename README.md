@@ -63,6 +63,13 @@ php artisan migrate --seed
 ```
 Info: Perintah --seed akan mengisi data awal (dummy) agar website siap digunakan.
 
+### 5. Konfigurasi Penyimpanan
+Langkah ini wajib agar gambar (Avatar/Thumbnail/Materi) bisa diakses publik.
+```bash
+php artisan storage:link
+```
+Info: Perintah --seed akan mengisi data awal (dummy) agar website siap digunakan.
+
 ### 5. Jalankan Aplikasi
 Buka dua terminal berbeda untuk menjalankan server:
 
