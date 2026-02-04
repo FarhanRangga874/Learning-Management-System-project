@@ -32,20 +32,6 @@
             z-index: -2;
         }
 
-        /* Fallback jika tidak ada background */
-        .default-frame {
-            position: absolute;
-            top: 20px; left: 20px; right: 20px; bottom: 20px;
-            border: 2px solid #c5a059;
-            z-index: -1;
-        }
-        .default-frame::after {
-            content: "";
-            position: absolute;
-            top: 4px; left: 4px; right: 4px; bottom: 4px;
-            border: 1px solid #1e293b;
-        }
-
         /* --- CONTENT --- */
         .content {
             position: relative;
@@ -173,16 +159,18 @@
         
         {{-- BACKGROUND --}}
         @if($template->background_image)
+            {{-- Menggunakan background yang diupload user --}}
             <img src="{{ public_path('storage/' . $template->background_image) }}" class="bg-image" alt="Background">
         @else
-            <div class="default-frame"></div>
+            {{-- [PERBAIKAN] Menggunakan Background Default --}}
+            {{-- Pastikan file 'certificate-bg.png' ada di folder: public/images/ --}}
+            <img src="{{ public_path('images/certificate-bg.png') }}" class="bg-image" alt="Default Background">
         @endif
 
         <div class="content">
             {{-- Header --}}
             <div class="header-text">Sertifikat Kelulusan</div>
             
-            {{-- [UBAH DISINI] Menggunakan Certificate Code dari Database --}}
             <div class="sub-header">NO. {{ $certificate->certificate_code }}</div>
             
             <div class="description">Diberikan dengan bangga kepada:</div>
@@ -208,7 +196,6 @@
                     <div style="font-size: 12px; color: #64748b;">Tanggal Penerbitan</div>
                     <br>
                     
-                    {{-- [UBAH DISINI] Menggunakan Certificate Code Asli --}}
                     <div class="id-badge">
                         ID: {{ $certificate->certificate_code }}
                     </div>
