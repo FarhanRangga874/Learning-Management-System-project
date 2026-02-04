@@ -72,7 +72,53 @@
                 </div>
 
                 {{-- ======================================================= --}}
-                {{-- SECTION 2: DAFTAR KURSUS (DIPINDAHKAN KE ATAS) --}}
+                {{-- SECTION 1.5: UTILITY (FAQ & USER) - DITAMBAHKAN --}}
+                {{-- ======================================================= --}}
+                <div class="mb-10">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-1 h-6 bg-pink-500 rounded-full"></div>
+                        <h3 class="text-lg font-bold text-gray-800">Utilitas Admin</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {{-- 1. UTILITY: KELOLA FAQ --}}
+                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 group hover:border-pink-200 transition-all">
+                            <div class="flex items-center gap-4 w-full sm:w-auto">
+                                <div class="w-10 h-10 rounded-lg bg-pink-50 text-pink-500 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-100 transition-colors">
+                                    {{-- Icon Question Mark --}}
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 text-sm">Pusat Bantuan (FAQ)</h4>
+                                    <p class="text-xs text-gray-500">Atur pertanyaan umum di halaman depan.</p>
+                                </div>
+                            </div>
+                            <a href="{{ route('admin.faqs.index') }}" class="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-all text-center">
+                                Kelola FAQ
+                            </a>
+                        </div>
+        
+                        {{-- 2. UTILITY: KELOLA PENGGUNA --}}
+                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 group hover:border-sky-200 transition-all">
+                            <div class="flex items-center gap-4 w-full sm:w-auto">
+                                <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-500 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-100 transition-colors">
+                                    {{-- Icon Users Group --}}
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 text-sm">Kelola Pengguna</h4>
+                                    <p class="text-xs text-gray-500">Melihat detail pengguna</p>
+                                </div>
+                            </div>
+                            <a href="{{ route('admin.users.index') }}" class="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:bg-sky-50 hover:text-sky-600 hover:border-sky-200 transition-all text-center">
+                                Lihat User
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ======================================================= --}}
+                {{-- SECTION 2: DAFTAR KURSUS --}}
                 {{-- ======================================================= --}}
                 <div class="mb-10">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-gray-100">
@@ -239,7 +285,7 @@
                 </div>
 
                 {{-- ======================================================= --}}
-                {{-- SECTION 3: ANALITIK & LAPORAN (DIPINDAHKAN KE BAWAH) --}}
+                {{-- SECTION 3: ANALITIK & LAPORAN --}}
                 {{-- ======================================================= --}}
                 <div class="mb-10">
                     
