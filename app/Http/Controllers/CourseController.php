@@ -12,28 +12,99 @@ use Illuminate\Routing\Controller;
 use App\Models\User; 
 use App\Models\Lesson;
 use App\Models\UserAnswer;
+use App\Models\Enrollment;
+use Carbon\Carbon;
 
 class CourseController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        $query = Course::with('category')->withCount('students')->orderBy('id', 'desc');
+public function index(Request $request)
+{
+    // 1. Set Bahasa Indonesia
+    Carbon::setLocale('id'); 
+    
+    $range = $request->input('range', 'month');
+    $startDate = now();
+    $dateFormat = 'Y-m-d'; 
 
-        if ($request->has('search')) {
-            $keyword = $request->input('search');
-            $query->where('title', 'LIKE', "%{$keyword}%");
-        }
-
-        $courses = $query->get(); 
-
-        $totalUsers = User::where('role', '!=', 'admin')->count();
-        $totalCourses = Course::count();
-
-        return view('admin.courses.index', compact('courses', 'totalUsers', 'totalCourses'));
+    // Tentukan rentang waktu
+    switch ($range) {
+        case 'today':
+            $startDate = now()->startOfDay();
+            $dateFormat = 'H:00'; 
+            break;
+        case 'week':
+            $startDate = now()->startOfWeek();
+            break;
+        case 'month':
+            $startDate = now()->startOfMonth();
+            break;
+        case 'year':
+            $startDate = now()->startOfYear();
+            $dateFormat = 'Y-m'; 
+            break;
+        case 'all':
+            $startDate = Carbon::create(2000, 1, 1);
+            break;
     }
+
+    // 2. Ambil Data Mentah (Format SQL: 2026-01-20)
+    $rawTrend = \App\Models\Enrollment::select(
+            DB::raw("DATE_FORMAT(joined_at, '$dateFormat') as date"), 
+            DB::raw('count(*) as count')
+        )
+        ->where('joined_at', '>=', $startDate)
+        ->groupBy('date')
+        ->orderBy('date', 'asc')
+        ->get();
+
+    // 3. PERCANTIK LABEL (Agar tampil: "Senin, 20 Jan")
+    $enrollmentTrend = $rawTrend->map(function($item) use ($range) {
+        try {
+            if ($range == 'today') {
+                $item->label = 'Jam ' . $item->date; // Contoh: Jam 14:00
+            } elseif ($range == 'year') {
+                $item->label = Carbon::createFromFormat('Y-m', $item->date)->translatedFormat('F Y'); // Contoh: Januari 2026
+            } else {
+                // INI YANG PENTING: Mengubah "2026-01-20" jadi "Senin, 20 Jan"
+                $item->label = Carbon::parse($item->date)->translatedFormat('l, d M');
+            }
+        } catch (\Exception $e) {
+            $item->label = $item->date;
+        }
+        return $item;
+    });
+
+    // ... (Sisa kode query courses dan recap lainnya tetap sama) ...
+    
+    // Query Tabel Rekap Top Kursus
+    $recapCourses = Course::withCount(['students as recent_students_count' => function ($query) use ($startDate) {
+        $query->where('enrollments.joined_at', '>=', $startDate);
+    }])
+    ->having('recent_students_count', '>', 0)
+    ->orderByDesc('recent_students_count')
+    ->take(10)
+    ->get();
+
+    $totalEnrollmentsInPeriod = $recapCourses->sum('recent_students_count');
+
+    // Query Utama (Pencarian & List Course)
+    $query = Course::with('category')->withCount('students')->orderBy('id', 'desc');
+    if ($request->has('search')) {
+        $query->where('title', 'LIKE', "%{$request->search}%");
+    }
+    $courses = $query->get();
+    
+    $totalUsers = User::where('role', '!=', 'admin')->count();
+    $totalCourses = Course::count();
+
+    return view('admin.courses.index', compact(
+        'courses', 'totalUsers', 'totalCourses', 
+        'range', 'enrollmentTrend', 'recapCourses', 'totalEnrollmentsInPeriod'
+    ));
+}
 
     /**
      * Show the form for creating a new resource.
