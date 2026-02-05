@@ -20,13 +20,13 @@
             {{-- Grid disesuaikan jadi 3 kolom karena 1 card dihapus --}}
             <div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                 
-                {{-- Card 1: Total Siswa --}}
+                {{-- Card 1: Total Enroll --}}
                 <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
                     <div class="flex items-center gap-2 mb-1">
                         <div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                         </div>
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Siswa</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Enroll</span>
                     </div>
                     <p class="text-2xl font-black text-slate-800">{{ $course->students_count }}</p>
                 </div>
