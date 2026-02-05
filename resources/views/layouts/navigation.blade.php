@@ -22,7 +22,6 @@
             <div class="shrink-0 flex items-center">
     <a href="/" class="flex items-center group hover:opacity-80">
 
-        <!-- LOGO -->
         <x-application-logo
             class="block h-12 w-auto fill-current text-indigo-600
                    transition-transform duration-200
@@ -30,7 +29,6 @@
                    mr-1.5"
         />
 
-        <!-- WORDMARK -->
         <div class="hidden sm:flex flex-col leading-none">
             <span
                 class="font-black text-xl tracking-tighter font-sans"
@@ -78,18 +76,19 @@
                         {{ __('Katalog') }}
                     </a>
 
-                    <a href="#" class="text-sm font-medium transition-colors hover:text-indigo-600" 
-                        :class="(!isLanding || showSearch) ? 'text-gray-600' : 'text-slate-700'">
-                        {{ __('Panduan') }}
-                    </a>
+                    {{-- [MODIFIKASI] Menu Panduan hanya untuk Admin --}}
+                    @if(Auth::check() && Auth::user()->role === 'admin')
+                        <a href="{{ route('admin.guide.index') }}" class="text-sm font-medium transition-colors hover:text-indigo-600" 
+                            :class="(!isLanding || showSearch) ? 'text-gray-600' : 'text-slate-700'">
+                            {{ __('Panduan') }}
+                        </a>
+                    @endif
                     
                     @auth
                         <a href="{{ route('dashboard') }}" class="text-sm font-medium transition-colors hover:text-indigo-600"
                             :class="(!isLanding || showSearch) ? 'text-gray-600' : 'text-slate-700'">
                             {{ __('Dashboard') }}
                         </a>
-
-
 
                         @if(Auth::user()->role === 'admin')
                             <a href="{{ route('admin.courses.index') }}" 
@@ -156,10 +155,12 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-gray-100 bg-white shadow-lg">
         <div class="pt-2 pb-3 space-y-1">
             
-            {{-- Mobile Link Panduan --}}
-            <x-responsive-nav-link href="#" :active="false">
-                {{ __('Panduan') }}
-            </x-responsive-nav-link>
+            {{-- [MODIFIKASI] Mobile Link Panduan (Admin Only) --}}
+            @if(Auth::check() && Auth::user()->role === 'admin')
+                <x-responsive-nav-link :href="route('admin.guide.index')" :active="request()->routeIs('admin.guide.index')">
+                    {{ __('Panduan Admin') }}
+                </x-responsive-nav-link>
+            @endif
 
             <x-responsive-nav-link :href="route('front.index')" :active="request()->routeIs('front.index')">
                 {{ __('Katalog Kelas') }}

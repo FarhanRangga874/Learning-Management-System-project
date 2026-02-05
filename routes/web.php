@@ -90,6 +90,10 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     
     Route::resource('certificates', AdminCertificateController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
+
+    Route::get('/guide', function () {
+        return view('admin.guide.index');
+    })->name('guide.index');
 });
 
 require __DIR__.'/auth.php';
