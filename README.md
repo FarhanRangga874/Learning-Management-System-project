@@ -115,7 +115,7 @@ exit
 ### 🐋 Docker Setup
 *Pastikan Docker Desktop sudah terinstall dan berjalan (Running).
 
-1. Install Dependencies (Initial Setup)
+#1. Install Dependencies (Initial Setup)
 Karena folder vendor belum ada saat pertama kali di-clone, gunakan perintah Docker ini untuk menginstall library yang dibutuhkan:
 ```bash
 docker run --rm \
@@ -127,7 +127,7 @@ docker run --rm \
 ```
 (Perintah ini akan meminjam container PHP sementara untuk mendownload semua library Laravel).
 <br>
-2. Konfigurasi Environment
+#2. Konfigurasi Environment
 Salin file konfigurasi
 ```bash
 cp .env.example .env
@@ -142,13 +142,13 @@ DB_USERNAME=sail   <-- User default Sail
 DB_PASSWORD=password
 ```
 
-3.Jalankan container
+#3.Jalankan container
 Jalankan perintah ini untuk menyalakan server:
 ```bash
 ./vendor/bin/sail up -d
 ```
 
-4. Setup Aplikasi
+#4. Setup Aplikasi
 Jalankan perintah berikut menggunakan prefix ./vendor/bin/sail (bukan php):
 ```bash
 # Generate Key
@@ -161,7 +161,7 @@ Jalankan perintah berikut menggunakan prefix ./vendor/bin/sail (bukan php):
 ./vendor/bin/sail artisan storage:link
 ```
 
-5. Setup Frontend (Tailwind CSS)
+#5. Setup Frontend (Tailwind CSS)
 Install dan jalankan Vite server untuk style:
 ```bash
 ./vendor/bin/sail npm install
