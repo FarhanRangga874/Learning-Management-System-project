@@ -111,3 +111,59 @@ exit
 4. Cari baris user yang ingin diubah, klik Edit.
 5. Pada kolom role, ubah nilainya dari 'enroll' menjadi 'admin'.
 6. Klik Go / Simpan.
+
+### 🐋 Docker Setup
+*Pastikan Docker Desktop sudah terinstall dan berjalan (Running).
+
+1. Install Dependencies (Initial Setup)
+Karena folder vendor belum ada saat pertama kali di-clone, gunakan perintah Docker ini untuk menginstall library yang dibutuhkan:
+```bash
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v $(pwd):/var/www/html \
+    -w /var/www/html \
+    laravelsail/php82-composer:latest \
+    composer install --ignore-platform-reqs
+```
+(Perintah ini akan meminjam container PHP sementara untuk mendownload semua library Laravel).
+<br>
+2. Konfigurasi Environment
+Salin file konfigurasi
+```bash
+cp .env.example .env
+```
+*Buka file .env dan ubah konfigurasi Database agar sesuai dengan Docker (Sail):
+```bash
+DB_CONNECTION=mysql
+DB_HOST=mysql      <-- Ubah ini (jangan 127.0.0.1)
+DB_PORT=3306
+DB_DATABASE=lms_pkl
+DB_USERNAME=sail   <-- User default Sail
+DB_PASSWORD=password
+```
+
+3.Jalankan container
+Jalankan perintah ini untuk menyalakan server:
+```bash
+./vendor/bin/sail up -d
+```
+
+4. Setup Aplikasi
+Jalankan perintah berikut menggunakan prefix ./vendor/bin/sail (bukan php):
+```bash
+# Generate Key
+./vendor/bin/sail artisan key:generate
+
+# Migrasi & Seeding Database
+./vendor/bin/sail artisan migrate --seed
+
+# Link Storage (Agar gambar muncul)
+./vendor/bin/sail artisan storage:link
+```
+
+5. Setup Frontend (Tailwind CSS)
+Install dan jalankan Vite server untuk style:
+```bash
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run dev
+```
