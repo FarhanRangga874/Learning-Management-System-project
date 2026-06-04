@@ -40,14 +40,26 @@ class CertificateController extends Controller
         $finalCertificateId = "C{$courseCode}_{$dateCode}_{$randomCode}";
         // =========================================
 
+        // Tentukan status berdasarkan certificate_policy
+        $status = 'pending';
+        $issuedAt = null;
+        $message = 'Permintaan sertifikat dikirim! Tunggu verifikasi admin.';
+
+        if ($course->certificate_policy === 'auto') {
+            $status = 'approved';
+            $issuedAt = now();
+            $message = 'Sertifikat telah diterbitkan! Silakan unduh sekarang.';
+        }
+
         Certificate::create([
             'user_id' => Auth::id(),
             'course_id' => $course->id,
-            'status' => 'pending', 
-            'certificate_code' => $finalCertificateId, // Masukkan kode custom tadi
+            'status' => $status,
+            'certificate_code' => $finalCertificateId,
+            'issued_at' => $issuedAt,
         ]);
 
-        return back()->with('success', 'Permintaan sertifikat dikirim! Tunggu verifikasi admin.');
+        return back()->with('success', $message);
     }
 
     public function download(Certificate $certificate)
