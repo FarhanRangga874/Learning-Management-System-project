@@ -52,10 +52,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// ====================================================
-// RUTE ADMIN (Manajemen Konten & Penilaian)
-// ====================================================
-// [PENTING] Middleware 'is_admin' ditambahkan di sini
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Manajemen Master Data

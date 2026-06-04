@@ -77,7 +77,7 @@
                         <div class="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
                             <div>
                                 <h3 class="font-bold text-gray-800 text-lg">Daftar Permintaan</h3>
-                                <p class="text-xs text-gray-500">Kelola persetujuan sertifikat siswa.</p>
+                                <p class="text-xs text-gray-500">Kelola persetujuan sertifikat pendaftar.</p>
                             </div>
                             
                             {{-- Search --}}
@@ -87,7 +87,7 @@
                             <table class="w-full text-sm text-left text-gray-500">
                                 <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-100">
                                     <tr>
-                                        <th class="px-6 py-4 font-bold">Siswa</th>
+                                        <th class="px-6 py-4 font-bold">pendaftar</th>
                                         <th class="px-6 py-4 font-bold">Kursus</th>
                                         <th class="px-6 py-4 font-bold">Tanggal</th>
                                         <th class="px-6 py-4 font-bold text-center">Status</th>
